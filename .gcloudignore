@@ -1,0 +1,87 @@
+# This file specifies files that are *NOT* uploaded to Google Cloud Build.
+# It overrides the default behavior which often uses .gitignore rules.
+# For more details, see: gcloud topic gcloudignore
+
+# Ensure compiled code, static assets, Dockerfile, and package files ARE uploaded
+# The ! prefix means "do not ignore"
+!dist/
+!public/
+!Dockerfile
+!package.json
+!package-lock.json
+
+# Files and directories to ignore:
+
+# Node Modules (will be installed during Docker build)
+node_modules/
+
+# Git directory
+.git/
+
+# Source files (not needed for this Docker build)
+src/
+*.ts
+tsconfig.json
+tsconfig.server.json
+
+# Local environment/dev stuff
+.DS_Store
+.env*
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+.vscode/
+eslint.config.js
+nodemon.json
+browser-sync.config.cjs
+
+# Ignore ignore files themselves
+.gitignore
+.dockerignore
+.gcloudignore
+
+# Other files from standard .gitignore that aren't needed
+logs
+lib-cov
+coverage
+*.lcov
+.nyc_output
+.grunt
+bower_components
+.lock-wscript
+build/Release
+jspm_packages/
+web_modules/
+*.tsbuildinfo
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.node_repl_history
+*.tgz
+.yarn-integrity
+.parcel-cache
+.cache
+.next
+out
+.nuxt
+# public # Already handled by !public/ above
+.vuepress/dist
+.temp
+.docusaurus
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+README.md

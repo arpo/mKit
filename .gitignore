@@ -124,6 +124,10 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Service Account Keys
+service-account-key.json
+*.json # If key has a different name
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged
