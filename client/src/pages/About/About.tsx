@@ -1,4 +1,3 @@
-import React from 'react';
 // import { useAboutStore } from './Store'; // Uncomment when store is used
 
 function About() {

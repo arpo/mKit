@@ -1,4 +1,3 @@
-import React from 'react';
 // import { useHomeStore } from './Store'; // Uncomment when store is used
 import Counter from '../../components/Counter/Counter'; // Import the counter component
 
