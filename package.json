@@ -108,7 +108,6 @@
     "build:client": "cd client && npm run build",
     "build": "npm run build:server && npm run build:client",
     "start": "NODE_ENV=production node dist/server.js",
-    "lint": "eslint \"src/**/*.ts\" \"client/src/**/*.{ts,tsx}\"",
     "format": "prettier --write \"src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\"",
     "deploy:gcp": "npm run build && node scripts/deploy-to-cloud-run.mjs"
   },

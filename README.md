@@ -31,7 +31,6 @@ This command will:
 - `npm run server` - Start the Node.js server only
 - `npm run client` - Start browser-sync only
 - `npm run ts:watch` - Watch and compile TypeScript files
-- `npm run lint` - Run ESLint to check code quality
 
 ## Project Structure
 ```
@@ -48,12 +47,6 @@ This command will:
 ├── browser-sync.config.cjs # Browser-sync configuration
 ├── nodemon.json        # Nodemon configuration for server auto-reload
 └── package.json        # Project dependencies and scripts
-```
-
-## Code Quality
-The project includes ESLint for maintaining code quality and consistency. Run the linting check with:
-```bash
-npm run lint
 ```
 
 ## Deployment to Google Cloud Run

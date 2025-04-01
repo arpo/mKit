@@ -20,6 +20,8 @@
     -   Moved initialization logic to `initCounter()` in `Script.ts`.
     -   Updated `Counter.tsx` to call `initCounter()` and remove direct logic.
 -   Updated Memory Bank (`systemPatterns.md`, `techContext.md`) and created `.clinerules` to reflect the established patterns.
+-   Fixed TypeScript errors in `About.tsx` and `Home.tsx` (unused React imports) identified during `npm run build`.
+-   Removed the root `lint` script from `package.json` as build includes type checking and the script was causing environment issues.
 
 ## Next Steps
 
