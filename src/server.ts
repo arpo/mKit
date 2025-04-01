@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path'; // Need dirname specifically
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,14 +12,27 @@ const app: Express = express();
 const port: number = parseInt(process.env.PORT || '8080', 10);
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '../public'))); // Use absolute path for safety
+app.use(express.static(path.join(__dirname, '../public'))); // Keep serving existing public files if needed
 
-// Route for the home page
-app.get('/', (_req: Request, res: Response): void => {
-  // Explicitly serve index.html for the root path
-  res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+// --- New: Serve React App Static Files (Production Only) ---
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.join(__dirname, '../../client/dist'); // Correct path relative to compiled server.ts
+  app.use(express.static(clientBuildPath));
+
+  // --- New: Catch-all for Client-Side Routing (Production Only) ---
+  // This should come after API routes and other static file serving
+  app.get('*', (_req: Request, res: Response): void => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+} else {
+  // Optional: Add a message or default route for development if needed
+  app.get('/', (_req: Request, res: Response): void => {
+    // In development, Vite handles the root. This is a fallback if accessed directly.
+    res.send('Server running in development mode. Access the React app via Vite dev server (usually http://localhost:5173).');
+  });
+}
+
 
 app.listen(port, (): void => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}. NODE_ENV=${process.env.NODE_ENV || 'development'}`);
 });

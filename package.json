@@ -99,16 +99,18 @@
     "tsx": "^4.19.2"
   },
   "scripts": {
-    "predev": "pkill -f nodemon || true && pkill -f browser-sync || true && pkill -f 'tsc --watch' || true",
+    "predev": "pkill -f nodemon || true && pkill -f 'vite' || true",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.server.json",
-    "server": "nodemon --exec tsx src/server.ts",
-    "client": "browser-sync start --config browser-sync.config.cjs",
-    "ts:watch": "tsc --watch",
-    "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run ts:watch\"",
-    "deploy:gcp": "node scripts/deploy-to-cloud-run.mjs"
+    "dev:server": "nodemon --exec tsx src/server.ts",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build:client": "cd client && npm run build",
+    "build": "npm run build:server && npm run build:client",
+    "start": "NODE_ENV=production node dist/server.js",
+    "lint": "eslint \"src/**/*.ts\" \"client/src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\"",
+    "deploy:gcp": "npm run build && node scripts/deploy-to-cloud-run.mjs"
   },
   "keywords": [],
   "author": "",
