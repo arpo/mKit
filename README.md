@@ -54,3 +54,43 @@ This command will:
 The project includes ESLint for maintaining code quality and consistency. Run the linting check with:
 ```bash
 npm run lint
+```
+
+## Deployment to Google Cloud Run
+
+This project includes an interactive script to help automate deployment to Google Cloud Run.
+
+**Prerequisites:**
+
+*   Ensure you have the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed (`gcloud` CLI).
+*   Authenticate the `gcloud` CLI with your user account which has permissions to enable APIs, create service accounts, and manage IAM roles in your target GCP project:
+    ```bash
+    gcloud auth login
+    ```
+*   Have your GCP Project ID ready.
+
+**Usage:**
+
+1.  Run the interactive deployment script:
+    ```bash
+    npm run deploy:gcp
+    ```
+2.  The script will prompt you for necessary details like:
+    *   GCP Project ID
+    *   Deployment Region (e.g., `us-central1`)
+    *   Cloud Run Service Name
+    *   Artifact Registry Repository Name
+    *   Docker Image Name
+    *   Deployer Service Account Name (will be created)
+    *   Runtime Service Account Email (defaults to Compute Engine default SA)
+3.  Follow the script's prompts. It will guide you through:
+    *   Enabling necessary GCP APIs (requires user authentication).
+    *   Creating the Artifact Registry repository (requires user authentication).
+    *   Creating a dedicated Deployer Service Account and key file (requires user authentication).
+    *   Granting necessary IAM roles (requires user authentication).
+    *   Building the application (`npm run build`).
+    *   Authenticating as the Deployer Service Account using the generated key.
+    *   Submitting the build to Cloud Build / Artifact Registry.
+    *   Deploying the service to Cloud Run.
+
+Refer to `gcp-cloud-run-deployment-guide.md` for a detailed breakdown of the manual steps the script automates.
