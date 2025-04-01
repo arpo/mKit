@@ -34,7 +34,7 @@ This command will:
 - `npm run build` - Build both server and client for production
 - `npm run start` - Start the production server (after building)
 - `npm run format` - Format code using Prettier
-- `npm run deploy` - Build the project and submit the Docker image to Google Cloud Build/Artifact Registry
+- `npm run deploy` - Fully automates build, Docker image push, and Cloud Run deployment using hardcoded settings.
 
 ## Project Structure
 ```
@@ -72,23 +72,17 @@ If you are setting up this project in a *new* Google Cloud environment for the f
 
 **Usage:**
 
-1.  **Build & Push Docker Image:**
-    The `npm run deploy` script builds the project and submits the build to Google Cloud Build, which creates the Docker image and pushes it to the registry (`gcr.io` by default, based on the command).
-    ```bash
-    npm run deploy
-    ```
-    *(This uses the project ID `sage-extension-455512-s0` hardcoded in the script).*
+**Usage:**
 
-2.  **Deploy to Cloud Run:**
-    After the build is pushed, you need to manually deploy it to Cloud Run using the `gcloud run deploy` command. Refer to the `gcp-cloud-run-deployment-guide.md` file for detailed instructions on this step, including required flags like `--image`, `--region`, `--platform`, `--service-account`, and `--allow-unauthenticated`.
-    ```bash
-    # Example (replace placeholders like REGION, REPO_NAME, IMAGE_NAME, SERVICE_NAME, RUNTIME_SA_EMAIL)
-    gcloud run deploy [SERVICE_NAME] \
-        --image [REGION]-docker.pkg.dev/sage-extension-455512-s0/[REPO_NAME]/[IMAGE_NAME]:latest \
-        --region=[REGION] \
-        --platform=managed \
-        --service-account [RUNTIME_SA_EMAIL] \
-        --allow-unauthenticated
-    ```
+After completing the **Initial One-Time Setup** described in `GCP-INITIAL-SETUP-GUIDE.md`, you can deploy the application using a single command:
 
-Refer to `gcp-cloud-run-deployment-guide.md` for generic details on the `gcloud run deploy` command and its flags. The specific setup steps (service accounts, permissions) required for this project are covered in `GCP-INITIAL-SETUP-GUIDE.md`.
+```bash
+npm run deploy
+```
+
+This command now fully automates the following sequence using hardcoded values (Project ID, Region, Repo, Image Name, Service Name, Service Account):
+1.  Builds the project locally (`npm run build`).
+2.  Submits the build context to Google Cloud Build, which creates the Docker image and pushes it to the configured Artifact Registry repository (`us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest`).
+3.  Deploys the newly built image to the Google Cloud Run service (`mkit` in `us-central1`).
+
+*(Note: Ensure the `gcloud` CLI is authenticated with an account that has permission to use the specified deployer service account (`roles/iam.serviceAccountUser`), typically achieved via `gcloud auth login` or `gcloud auth activate-service-account`.)*

@@ -109,7 +109,7 @@
     "build": "npm run build:server && npm run build:client",
     "start": "NODE_ENV=production node dist/server.js",
     "format": "prettier --write \"src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\"",
-    "deploy": "npm run build && gcloud builds submit --project=sage-extension-455512-s0 ."
+    "deploy": "npm run build && gcloud builds submit --tag us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest . --project=sage-extension-455512-s0 && gcloud run deploy mkit --image=us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest --region=us-central1 --platform=managed --service-account=mkit-deployer@sage-extension-455512-s0.iam.gserviceaccount.com --allow-unauthenticated --project=sage-extension-455512-s0"
   },
   "keywords": [],
   "author": "",
