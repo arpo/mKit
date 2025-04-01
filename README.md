@@ -76,13 +76,13 @@ This project includes an interactive script to help automate deployment to Googl
     npm run deploy:gcp
     ```
 2.  The script will prompt you for necessary details like:
-    *   GCP Project ID
-    *   Deployment Region (e.g., `us-central1`)
-    *   Cloud Run Service Name
-    *   Artifact Registry Repository Name
-    *   Docker Image Name
-    *   Deployer Service Account Name (will be created)
-    *   Runtime Service Account Email (defaults to Compute Engine default SA)
+    *   **GCP Project ID**: Your unique Google Cloud project identifier.
+    *   **Deployment Region**: The geographical location for your service (e.g., `us-central1`, `europe-west1`). Choose one close to your users.
+    *   **Cloud Run Service Name**: The name you want to give your deployed application on Cloud Run (e.g., `my-web-app`, `mkit`). This becomes part of the service URL.
+    *   **Artifact Registry Repository Name**: The name for the repository within Artifact Registry where your container images will be stored (e.g., `my-app-images`, `mkit-repo`). Think of it like a folder for your project's images.
+    *   **Docker Image Name**: The specific name for the container image built for your application (e.g., `frontend`, `backend`, `mkit`). This image contains your application code and dependencies.
+    *   **Deployer Service Account Name**: A name for the dedicated service account the script will create to handle deployment tasks (e.g., `app-deployer`).
+    *   **Runtime Service Account Email**: The email of the service account the deployed Cloud Run service will run *as*. It needs permission to pull the Docker image. Defaults to the Compute Engine default service account (`PROJECT_NUMBER-compute@developer.gserviceaccount.com`).
 3.  Follow the script's prompts. It will guide you through:
     *   Enabling necessary GCP APIs (requires user authentication).
     *   Creating the Artifact Registry repository (requires user authentication).
