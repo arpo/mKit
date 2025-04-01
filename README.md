@@ -31,6 +31,10 @@ This command will:
 - `npm run server` - Start the Node.js server only
 - `npm run client` - Start browser-sync only
 - `npm run ts:watch` - Watch and compile TypeScript files
+- `npm run build` - Build both server and client for production
+- `npm run start` - Start the production server (after building)
+- `npm run format` - Format code using Prettier
+- `npm run deploy` - Build the project and submit the Docker image to Google Cloud Build/Artifact Registry
 
 ## Project Structure
 ```
@@ -51,39 +55,40 @@ This command will:
 
 ## Deployment to Google Cloud Run
 
-This project includes an interactive script to help automate deployment to Google Cloud Run.
+This project uses Google Cloud Build to containerize the application and Google Cloud Run to host it.
 
-**Prerequisites:**
+**Initial One-Time Setup:**
+If you are setting up this project in a *new* Google Cloud environment for the first time, follow the steps outlined in `GCP-INITIAL-SETUP-GUIDE.md`. This guide covers enabling APIs, creating service accounts, setting up Artifact Registry, and granting permissions.
+
+**Regular Deployment Prerequisites:**
 
 *   Ensure you have the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed (`gcloud` CLI).
-*   Authenticate the `gcloud` CLI with your user account which has permissions to enable APIs, create service accounts, and manage IAM roles in your target GCP project:
+*   Authenticate the `gcloud` CLI with your user account:
     ```bash
     gcloud auth login
     ```
-*   Have your GCP Project ID ready.
+*   Ensure your GCP project (`sage-extension-455512-s0`) has the following APIs enabled: Cloud Build API (`cloudbuild.googleapis.com`), Artifact Registry API (`artifactregistry.googleapis.com`), and Cloud Run API (`run.googleapis.com`).
+*   Ensure you have an Artifact Registry Docker repository configured in your project (the `gcloud builds submit` command implicitly pushes to `gcr.io/[PROJECT_ID]/[IMAGE_NAME]`, but using Artifact Registry e.g., `[REGION]-docker.pkg.dev/[PROJECT_ID]/[REPO]/[IMAGE]` is recommended). The build command might need adjustment if using Artifact Registry.
 
 **Usage:**
 
-1.  Run the interactive deployment script:
+1.  **Build & Push Docker Image:**
+    The `npm run deploy` script builds the project and submits the build to Google Cloud Build, which creates the Docker image and pushes it to the registry (`gcr.io` by default, based on the command).
     ```bash
-    npm run deploy:gcp
+    npm run deploy
     ```
-2.  The script will prompt you for necessary details like:
-    *   **GCP Project ID**: Your unique Google Cloud project identifier.
-    *   **Deployment Region**: The geographical location for your service (e.g., `us-central1`, `europe-west1`). Choose one close to your users.
-    *   **Cloud Run Service Name**: The name you want to give your deployed application on Cloud Run (e.g., `my-web-app`, `mkit`). This becomes part of the service URL.
-    *   **Artifact Registry Repository Name**: The name for the repository within Artifact Registry where your container images will be stored (e.g., `my-app-images`, `mkit-repo`). Think of it like a folder for your project's images.
-    *   **Docker Image Name**: The specific name for the container image built for your application (e.g., `frontend`, `backend`, `mkit`). This image contains your application code and dependencies.
-    *   **Deployer Service Account Name**: A name for the dedicated service account the script will create to handle deployment tasks (e.g., `app-deployer`).
-    *   **Runtime Service Account Email**: The email of the service account the deployed Cloud Run service will run *as*. It needs permission to pull the Docker image. Defaults to the Compute Engine default service account (`PROJECT_NUMBER-compute@developer.gserviceaccount.com`).
-3.  Follow the script's prompts. It will guide you through:
-    *   Enabling necessary GCP APIs (requires user authentication).
-    *   Creating the Artifact Registry repository (requires user authentication).
-    *   Creating a dedicated Deployer Service Account and key file (requires user authentication).
-    *   Granting necessary IAM roles (requires user authentication).
-    *   Building the application (`npm run build`).
-    *   Authenticating as the Deployer Service Account using the generated key.
-    *   Submitting the build to Cloud Build / Artifact Registry.
-    *   Deploying the service to Cloud Run.
+    *(This uses the project ID `sage-extension-455512-s0` hardcoded in the script).*
 
-Refer to `gcp-cloud-run-deployment-guide.md` for a detailed breakdown of the manual steps the script automates.
+2.  **Deploy to Cloud Run:**
+    After the build is pushed, you need to manually deploy it to Cloud Run using the `gcloud run deploy` command. Refer to the `gcp-cloud-run-deployment-guide.md` file for detailed instructions on this step, including required flags like `--image`, `--region`, `--platform`, `--service-account`, and `--allow-unauthenticated`.
+    ```bash
+    # Example (replace placeholders like REGION, REPO_NAME, IMAGE_NAME, SERVICE_NAME, RUNTIME_SA_EMAIL)
+    gcloud run deploy [SERVICE_NAME] \
+        --image [REGION]-docker.pkg.dev/sage-extension-455512-s0/[REPO_NAME]/[IMAGE_NAME]:latest \
+        --region=[REGION] \
+        --platform=managed \
+        --service-account [RUNTIME_SA_EMAIL] \
+        --allow-unauthenticated
+    ```
+
+Refer to `gcp-cloud-run-deployment-guide.md` for generic details on the `gcloud run deploy` command and its flags. The specific setup steps (service accounts, permissions) required for this project are covered in `GCP-INITIAL-SETUP-GUIDE.md`.

@@ -1,3 +1,16 @@
+# Reference: Original GCP Initial Setup Script Code
+
+**Purpose:** This file contains the original JavaScript code from the **deleted** `scripts/deploy-to-cloud-run.mjs` script for reference purposes.
+
+**Original Intent:** This script was designed for a **one-time setup** of the necessary Google Cloud Platform (GCP) resources required to host the mKit application using Cloud Build and Cloud Run. It automated steps like enabling APIs, creating service accounts, setting up Artifact Registry, and granting permissions.
+
+**Current Status:** This script has been **removed** from the project's active workflow (`npm run deploy`) to avoid confusion. Subsequent deployments are handled by `npm run deploy` (builds & pushes the image) followed by a manual `gcloud run deploy` command.
+
+**Do not run this code directly unless you intend to perform a full initial setup of a new GCP environment and understand its effects.** For manual setup steps, refer to the command examples within this script or the generic `gcp-cloud-run-deployment-guide.md`.
+
+---
+
+```javascript
 #!/usr/bin/env node
 import inquirer from 'inquirer';
 import { execSync, exec } from 'node:child_process';
@@ -94,7 +107,7 @@ async function enableApis(config) {
   ];
   // This command requires user authentication with permissions to enable APIs
   console.log("   Please ensure you are authenticated via 'gcloud auth login' with sufficient permissions.");
-  const command = `gcloud services enable ${apis.join(' ')} --project=${config.projectId}`;
+  const command = \`gcloud services enable ${apis.join(' ')} --project=${config.projectId}\`;
   runCommandSync(command, "Enable GCP APIs"); // Synchronous as it might prompt user
 }
 
@@ -102,23 +115,23 @@ async function createArtifactRegistryRepo(config) {
   console.log("\n📦 Creating Artifact Registry repository...");
   // This command requires user authentication with permissions to create repos
   console.log("   Please ensure you are authenticated via 'gcloud auth login' with sufficient permissions.");
-  const command = `gcloud artifacts repositories create ${config.repoName} --repository-format=docker --location=${config.region} --description="${config.serviceName} Docker images" --project=${config.projectId}`;
+  const command = \`gcloud artifacts repositories create ${config.repoName} --repository-format=docker --location=${config.region} --description="${config.serviceName} Docker images" --project=${config.projectId}\`;
   runCommandSync(command, "Create Artifact Registry repository");
 }
 
 async function createDeployerServiceAccount(config) {
   console.log("\n👤 Creating Deployer Service Account...");
   // Requires user authentication with permissions
-  const saEmail = `${config.deployerSaName}@${config.projectId}.iam.gserviceaccount.com`;
-  const commandCreate = `gcloud iam service-accounts create ${config.deployerSaName} --display-name="Deployment SA for ${config.serviceName}" --project=${config.projectId}`;
+  const saEmail = \`${config.deployerSaName}@${config.projectId}.iam.gserviceaccount.com\`;
+  const commandCreate = \`gcloud iam service-accounts create ${config.deployerSaName} --display-name="Deployment SA for ${config.serviceName}" --project=${config.projectId}\`;
   if (!runCommandSync(commandCreate, "Create Deployer Service Account")) return null; // Stop if creation fails
 
   console.log("🔑 Creating and downloading service account key...");
-  const keyFileName = `./${config.deployerSaName}-key.json`;
-  const commandKey = `gcloud iam service-accounts keys create ${keyFileName} --iam-account=${saEmail} --project=${config.projectId}`;
+  const keyFileName = \`./${config.deployerSaName}-key.json\`;
+  const commandKey = \`gcloud iam service-accounts keys create ${keyFileName} --iam-account=${saEmail} --project=${config.projectId}\`;
   if (!runCommandSync(commandKey, "Create Deployer SA Key")) return null;
 
-  console.log(`✅ Key file created: ${keyFileName}`);
+  console.log(\`✅ Key file created: ${keyFileName}\`);
   console.log("🔒 SECURITY: Add this key file ('*.json' or specific name) to your .gitignore!");
   return { saEmail, keyFileName };
 }
@@ -139,9 +152,9 @@ async function grantRoles(config, deployerInfo) {
     ];
 
     for (const { email, role } of rolesToGrant) {
-        const command = `gcloud projects add-iam-policy-binding ${config.projectId} --member="serviceAccount:${email}" --role="${role}" --condition=None`; // Added --condition=None to suppress prompt if role already exists
-        if (!runCommandSync(command, `Grant ${role} to ${email}`)) {
-            console.error(`❌ Failed to grant role ${role}. Please check permissions and retry.`);
+        const command = \`gcloud projects add-iam-policy-binding ${config.projectId} --member="serviceAccount:${email}" --role="${role}" --condition=None\`; // Added --condition=None to suppress prompt if role already exists
+        if (!runCommandSync(command, \`Grant ${role} to ${email}\`)) {
+            console.error(\`❌ Failed to grant role ${role}. Please check permissions and retry.\`);
             // Decide if we should exit or continue
             // process.exit(1);
         }
@@ -158,15 +171,15 @@ async function buildAndPushImage(config) {
     if (!runCommandSync('npm run build', "Run local build (e.g., tsc)")) return false;
 
     // 2. Authenticate as Deployer SA
-    const authCommand = `gcloud auth activate-service-account --key-file=${config.deployerKeyFile}`;
+    const authCommand = \`gcloud auth activate-service-account --key-file=${config.deployerKeyFile}\`;
     if (!runCommandSync(authCommand, "Authenticate as Deployer SA")) return false;
 
     // 3. Submit build
-    const imageUrl = `${config.region}-docker.pkg.dev/${config.projectId}/${config.repoName}/${config.imageName}:latest`;
-    const buildCommand = `gcloud builds submit --tag ${imageUrl} . --project=${config.projectId}`;
+    const imageUrl = \`${config.region}-docker.pkg.dev/${config.projectId}/${config.repoName}/${config.imageName}:latest\`;
+    const buildCommand = \`gcloud builds submit --tag ${imageUrl} . --project=${config.projectId}\`;
      // Ensure .gcloudignore exists or is created if necessary! Add check/creation logic here if needed.
     console.log("   INFO: Ensure a '.gcloudignore' file exists if your .gitignore excludes 'dist/' or other needed files.");
-    return runCommandSync(buildCommand, `Build and push image to ${imageUrl}`);
+    return runCommandSync(buildCommand, \`Build and push image to ${imageUrl}\`);
 }
 
 
@@ -174,8 +187,8 @@ async function deployToCloudRun(config) {
     console.log("\n🚀 Deploying to Cloud Run...");
     // Should still be authenticated as Deployer SA from previous step
 
-    const imageUrl = `${config.region}-docker.pkg.dev/${config.projectId}/${config.repoName}/${config.imageName}:latest`;
-    const deployCommand = `gcloud run deploy ${config.serviceName} --image ${imageUrl} --platform managed --region ${config.region} --service-account ${config.runtimeSaEmail} --allow-unauthenticated --project=${config.projectId}`;
+    const imageUrl = \`${config.region}-docker.pkg.dev/${config.projectId}/${config.repoName}/${config.imageName}:latest\`;
+    const deployCommand = \`gcloud run deploy ${config.serviceName} --image ${imageUrl} --platform managed --region ${config.region} --service-account ${config.runtimeSaEmail} --allow-unauthenticated --project=${config.projectId}\`;
 
     if (runCommandSync(deployCommand, "Deploy service to Cloud Run")) {
         console.log("\n🎉 Deployment successful!");
@@ -231,3 +244,5 @@ main().catch(error => {
   console.error("\n💥 An unexpected error occurred:", error);
   process.exit(1);
 });
+
+\`\`\`

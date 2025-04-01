@@ -7,7 +7,7 @@
 -   **Language:** TypeScript (compiled, server config: `tsconfig.server.json`)
 -   **Package Manager:** npm (root level)
 -   **Development:** `nodemon`, `tsx`
--   **Deployment:** Dockerfile exists, GCP Cloud Run script (`scripts/deploy-to-cloud-run.mjs`)
+-   **Deployment:** Dockerfile exists (for containerization via Cloud Build). See `Tooling & Conventions` below.
 
 ## Frontend (`/client`)
 
@@ -27,3 +27,5 @@
 -   **`useEffect` Avoidance:** See `systemPatterns.md` for the pattern using exported functions from `Script.ts`.
 -   **Type Checking:** TypeScript (via `npm run build`)
 -   **Formatting:** Prettier (`npm run format`)
+-   **GCP Initial Setup:** Documented in `GCP-INITIAL-SETUP-GUIDE.md` (covers API enablement, service accounts, Artifact Registry, IAM). The automated script (`scripts/deploy-to-cloud-run.mjs`) has been removed.
+-   **Deployment:** Build & Push via `npm run deploy` (`gcloud builds submit`); requires manual `gcloud run deploy` step after initial setup. Project ID (`sage-extension-455512-s0`) hardcoded in `package.json`.
