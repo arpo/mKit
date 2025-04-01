@@ -1,0 +1,35 @@
+# Cline Rules for mKit Project
+
+This file documents key patterns, preferences, and project intelligence learned during development.
+
+## Frontend Development Patterns (/client directory)
+
+1.  **Component Structure:**
+    *   Enforce the three-file structure for components/pages:
+        *   `ComponentName.tsx`: React component, focused on JSX markup and rendering. Minimal logic.
+        *   `Script.ts`: Contains component-specific logic, Zustand store (`create`), state interfaces, actions, and exported helper/initialization functions.
+        *   `ComponentName.css`: Component-specific styles.
+    *   This separation improves maintainability and isolates concerns.
+
+2.  **Logic Separation:**
+    *   Mandate moving state logic (`zustand`), actions, API call triggers, and complex computations into `Script.ts`.
+    *   `.tsx` files should primarily contain JSX, import necessary state/actions via Zustand hooks/selectors, and call exported functions from `Script.ts`.
+
+3.  **`useEffect` Prohibition (CRITICAL):**
+    *   **Avoid using `useEffect`** for component initialization, data fetching triggers, or running logic on mount/update unless absolutely necessary for syncing with external, non-React systems.
+    *   **PREFERRED PATTERN:** Place initialization/setup logic within functions exported from `Script.ts` (e.g., `initComponent()`). Import and call these functions *directly* at the top of the component's function body in the `.tsx` file.
+    *   **Reasoning:** This keeps components cleaner, makes logic flow more predictable, avoids potential infinite loops or unnecessary re-renders associated with misused `useEffect`, and centralizes component logic in `Script.ts`.
+
+4.  **State Management:**
+    *   Use `zustand` for state management.
+    *   Define stores (`create<...>`) within the relevant component/page's `Script.ts` file.
+    *   Export state interfaces (e.g., `export interface MyState { ... }`) from `Script.ts` for use in `.tsx` selectors.
+
+## General & Workflow
+
+*   **Memory Bank:** Keep the `/memory-bank` directory updated, especially `activeContext.md` and `progress.md`, to ensure continuity.
+*   **Communication:** Ask for clarification if requirements or patterns are unclear. Verify assumptions.
+
+*   **Development Server (CRITICAL):** **DO NOT use 
+`npm run dev` or `npm run dev:client`
+The system is running already!!!!
