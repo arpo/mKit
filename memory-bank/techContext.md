@@ -27,5 +27,5 @@
 -   **`useEffect` Avoidance:** See `systemPatterns.md` for the pattern using exported functions from `Script.ts`.
 -   **Type Checking:** TypeScript (via `npm run build`)
 -   **Formatting:** Prettier (`npm run format`)
--   **GCP Initial Setup:** Documented in `GCP-INITIAL-SETUP-GUIDE.md` (covers API enablement, service accounts, Artifact Registry, IAM). The original setup script has been removed.
--   **Deployment:** Fully automated via `npm run deploy` which performs build, image push (to Artifact Registry), and Cloud Run deployment using hardcoded values (Project ID, Region, Repo, Image, Service Name, SA) defined in `package.json`. Requires initial one-time setup to be completed first.
+-   **GCP Initial Setup:** Documented in `GCP-INITIAL-SETUP-GUIDE.md` (original script code preserved for reference). Manual steps required for first-time setup.
+-   **Deployment:** Requires manual `gcloud` commands after building. `npm run deploy` script only runs `npm run build`. See `README.md` for manual `gcloud builds submit` and `gcloud run deploy` commands.

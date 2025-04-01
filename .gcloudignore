@@ -85,3 +85,6 @@ out
 .yarn/install-state.gz
 .pnp.*
 README.md
+
+# Ignore downloaded service account keys!
+*.json

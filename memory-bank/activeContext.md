@@ -23,8 +23,8 @@
 -   Fixed TypeScript errors in `About.tsx` and `Home.tsx` (unused React imports) identified during `npm run build`.
 -   Removed the root `lint` script from `package.json` as build includes type checking and the script was causing environment issues.
 -   Replaced the interactive setup script (`scripts/deploy-to-cloud-run.mjs`) with a documentation file (`GCP-INITIAL-SETUP-GUIDE.md`) preserving the original script code for reference.
--   Updated the `deploy` script in `package.json` to perform a fully automated build, image push (to Artifact Registry), and Cloud Run deployment using hardcoded project details (`sage-extension-455512-s0`, `us-central1`, `mkit-repo`, `mkit` service, `mkit-deployer@...` SA).
--   Updated `README.md` to reflect the new automated deployment process.
+-   Simplified the `deploy` script in `package.json` to only run `npm run build`.
+-   Updated `README.md` to document the manual `gcloud builds submit` and `gcloud run deploy` commands required after running `npm run deploy`.
 
 ## Next Steps
 

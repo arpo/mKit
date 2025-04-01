@@ -34,7 +34,7 @@ This command will:
 - `npm run build` - Build both server and client for production
 - `npm run start` - Start the production server (after building)
 - `npm run format` - Format code using Prettier
-- `npm run deploy` - Fully automates build, Docker image push, and Cloud Run deployment using hardcoded settings.
+- `npm run deploy` - Builds the project (server and client). Deployment requires manual `gcloud` commands afterwards.
 
 ## Project Structure
 ```
@@ -74,15 +74,34 @@ If you are setting up this project in a *new* Google Cloud environment for the f
 
 **Usage:**
 
-After completing the **Initial One-Time Setup** described in `GCP-INITIAL-SETUP-GUIDE.md`, you can deploy the application using a single command:
+**Usage:**
 
-```bash
-npm run deploy
-```
+After completing the **Initial One-Time Setup** described in `GCP-INITIAL-SETUP-GUIDE.md`, follow these steps for deployment:
 
-This command now fully automates the following sequence using hardcoded values (Project ID, Region, Repo, Image Name, Service Name, Service Account):
-1.  Builds the project locally (`npm run build`).
-2.  Submits the build context to Google Cloud Build, which creates the Docker image and pushes it to the configured Artifact Registry repository (`us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest`).
-3.  Deploys the newly built image to the Google Cloud Run service (`mkit` in `us-central1`).
+1.  **Build the Project:**
+    Run the `deploy` script, which now only performs the build step:
+    ```bash
+    npm run deploy
+    ```
 
-*(Note: Ensure the `gcloud` CLI is authenticated with an account that has permission to use the specified deployer service account (`roles/iam.serviceAccountUser`), typically achieved via `gcloud auth login` or `gcloud auth activate-service-account`.)*
+2.  **Build & Push Docker Image via Cloud Build:**
+    Manually run the following `gcloud` command in your terminal (ensure your `gcloud` CLI is authenticated with sufficient permissions):
+    ```bash
+    # Replace placeholders if needed, but these were the last used values:
+    # Region: us-central1
+    # Project ID: sage-extension-455512-s0
+    # Repo Name: mkit-repo
+    # Image Name: mkit
+    gcloud builds submit --tag us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest . --project=sage-extension-455512-s0
+    ```
+
+3.  **Deploy to Cloud Run:**
+    Manually run the following `gcloud` command in your terminal:
+    ```bash
+    # Replace placeholders if needed, but these were the last used values:
+    # Service Name: mkit
+    # Region: us-central1
+    # Project ID: sage-extension-455512-s0
+    # Runtime SA: mkit-deployer@sage-extension-455512-s0.iam.gserviceaccount.com
+    gcloud run deploy mkit --image=us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest --region=us-central1 --platform=managed --service-account=mkit-deployer@sage-extension-455512-s0.iam.gserviceaccount.com --allow-unauthenticated --project=sage-extension-455512-s0
+    ```
