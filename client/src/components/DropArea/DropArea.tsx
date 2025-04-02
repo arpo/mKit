@@ -11,7 +11,10 @@ function DropArea(props: Partial<DropzoneProps>) {
   // Get state and actions from the Zustand store
   const isDraggingOverWindow = useDropAreaStore((state: DropAreaState) => state.isDraggingOverWindow);
   const droppedFiles = useDropAreaStore((state: DropAreaState) => state.droppedFiles); // Get dropped files state
-  const { setDragging, handleFileDrop, handleFileReject } = useDropAreaStore.getState();
+  // Select actions using the hook
+  const setDragging = useDropAreaStore((state: DropAreaActions) => state.setDragging);
+  const handleFileDrop = useDropAreaStore((state: DropAreaActions) => state.handleFileDrop);
+  const handleFileReject = useDropAreaStore((state: DropAreaActions) => state.handleFileReject);
 
   // Window event listeners updated to use store action
   useWindowEvent('dragenter', () => {

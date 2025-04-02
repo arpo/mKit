@@ -58,7 +58,28 @@ async function startSplittingProcess(req) { // Removed Request type
   }
 }
 
+/**
+ * Gets the status and result of a prediction from Replicate.
+ * @param predictionId - The ID of the prediction to fetch.
+ * @returns The prediction object from Replicate.
+ * @throws If the Replicate API call fails.
+ */
+async function getPredictionStatus(predictionId) {
+  console.log(`Fetching status for prediction ID: ${predictionId}...`);
+  try {
+    const prediction = await replicate.predictions.get(predictionId);
+    console.log(`Status for ${predictionId}: ${prediction.status}`);
+    return prediction;
+  } catch (error) {
+    console.error(`Replicate API error getting status for ${predictionId}:`, error);
+    // Rethrow or handle specific error types (e.g., 404 Not Found)
+    throw new Error(`Failed to get prediction status from Replicate for ID: ${predictionId}`);
+  }
+}
+
+
 // Use module.exports for CommonJS
 module.exports = {
-  startSplittingProcess
+  startSplittingProcess,
+  getPredictionStatus
 };

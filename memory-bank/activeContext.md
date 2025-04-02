@@ -1,4 +1,4 @@
-# Active Context: mKit (2025-04-02 2:09 PM)
+# Active Context: mKit (2025-04-02 2:39 PM)
 
 ## Current Focus
 
@@ -62,9 +62,19 @@
     -   Renamed `.ts` files (`server.ts`, `controller.ts`, `routes.ts`) to `.js`.
     -   Removed TypeScript syntax (types, imports) and converted to CommonJS (`require`, `module.exports`).
     -   Updated `package.json` scripts (`dev:server`, `start`, `build`, `format`, `deploy`) to remove TS compilation and run `.js` files directly.
-    -   Removed `"type": "module"` from `package.json`.
--   **Integrated Frontend Upload (Remains Unchanged):**
-    -   Updated `DropArea/Script.ts` with state (`isLoading`, `predictionResult`, `error`) and `uploadAudio` action.
+    -   Removed `"type": "module"` from `package.json` (later added back).
+-   **Reverted Server to ESM Attempt:**
+    -   Restored `"type": "module"` in `package.json`.
+    -   Changed `tsconfig.server.json` back to `module: "NodeNext"`.
+    -   Changed server files back to `import`. (Still resulted in TS errors).
+-   **Converted Server to JavaScript (Final):**
+    -   Renamed server files (`server.js`, `controller.js`, `routes.js`) to `.cjs` extension.
+    -   Converted code to use CommonJS (`require`, `module.exports`).
+    -   Updated `package.json` scripts (`dev:server`, `start`, `build`, `format`, `deploy`) for `.cjs` files.
+    -   Kept `"type": "module"` in `package.json` (Node handles `.cjs` correctly).
+-   **Fixed Vite Proxy:** Updated `client/vite.config.ts` target to `http://localhost:8080`.
+-   **Integrated Frontend Upload (Confirmed Working):**
+    -   `DropArea/Script.ts` includes state (`isLoading`, `predictionResult`, `error`) and `uploadAudio` action.
     -   Updated `Home.tsx` to call `uploadAudio` on button click, display loading overlay, errors, and initial prediction ID.
     -   Fixed Mantine `Text` component import issue in `Home.tsx`.
 

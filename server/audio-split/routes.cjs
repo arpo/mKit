@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const { startSplittingProcess } = require('./controller.cjs'); // Add .cjs extension
+// Import both functions from controller now
+const { startSplittingProcess, getPredictionStatus } = require('./controller.cjs');
 
 const router = express.Router();
 
@@ -28,9 +29,24 @@ router.post('/', upload.single('audio'), async (req, res, next) => { // Remove t
   }
 });
 
-// Future route for checking status (example)
-// router.get('/status/:id', async (req, res) => {
-//   // Implementation
-// });
+// Route for checking prediction status
+router.get('/status/:id', async (req, res, next) => {
+  try {
+    const predictionId = req.params.id;
+    if (!predictionId) {
+      return res.status(400).json({ message: 'Prediction ID is required.' });
+    }
+    console.log(`Received status check request for ID: ${predictionId}`);
+    const predictionStatus = await getPredictionStatus(predictionId);
+    res.status(200).json(predictionStatus);
+  } catch (error) {
+    console.error(`Error checking status for ID: ${req.params.id}`, error);
+     if (error instanceof Error) {
+        res.status(500).json({ message: error.message || 'Failed to get prediction status.' });
+    } else {
+        res.status(500).json({ message: 'An unknown error occurred while checking status.' });
+    }
+  }
+});
 
 module.exports = router; // Use module.exports

@@ -1,18 +1,18 @@
-# Progress: mKit (2025-04-02 2:32 PM)
+# Progress: mKit (2025-04-02 2:39 PM)
 
 ## What Works
 
 -   **Backend Server:** Basic Express server setup using JavaScript (`server/server.cjs`).
 -   **Frontend Scaffolding:** React/Vite/TS project initialized in `/client`.
 -   **Dependencies:** `react-router-dom`, `zustand`, `@mantine/core`, `@mantine/hooks`, `@mantine/dropzone`, `@tabler/icons-react` installed in client. Root dependencies `dotenv`, `replicate`, `multer` installed.
--   **Core Structure:** `components`, `pages`, `styles` directories created in client. `server/audio-split` directory created.
+-   **Core Structure:** `components`, `pages`, `styles` directories created in client. `server/audio-split` directory created. `server/ts` directory still exists but is unused for the main server logic.
 -   **Routing:** Basic routing between Home and About pages configured (`client/src/main.tsx`). API route `/api/audio-split` added (`server/server.cjs`).
 -   **UI Library:** Mantine provider configured with default dark theme in `client/src/main.tsx`.
 -   **Styling:** Mantine core styles + Global (`global.css`). Component CSS (`DropArea.css`) used for static styles.
 -   **Counter Component:** Functional example component (`Counter.tsx`) refactored to use Mantine components and separate logic (`Script.ts`) using Zustand.
 -   **`useEffect` Avoidance Pattern:** Implemented and documented.
--   **Build/Dev Scripts:** Root `package.json` updated for client development and JavaScript server execution (no TS build step for server).
--   **Server Integration:** Vite proxy and production static serving configured in `server.cjs`.
+-   **Build/Dev Scripts:** Root `package.json` updated for client development and JavaScript server execution (using `.cjs` files). No server TS build step.
+-   **Server Integration:** Vite proxy (`client/vite.config.ts`) corrected to point to port 8080. Production static serving configured in `server.cjs`.
 -   **Initial Documentation:** Memory Bank core files created/updated. `.clinerules` created.
 -   **GCP Deployment Setup (Project: `mkit-app-1`):**
     -   Initial configuration complete (Cloud Run, Cloud Build, Artifact Registry, Service Accounts, IAM roles).
@@ -47,16 +47,17 @@
 -   **UI Refinements:** Add ability to clear dropped files, improve error/status messages.
 -   Testing (Unit, Integration, E2E for the new feature).
 -   Further application features.
+-   **Cleanup:** Remove unused `server/ts` directory and `tsconfig.server.json`. Adjust `.gitignore` if needed.
 
 ## Current Status
 
--   Core project setup, patterns, and deployment pipeline are functional.
+-   Core project setup, patterns, and deployment pipeline are functional (pending test of JS server deployment).
 -   `DropArea` component allows audio file upload.
--   JavaScript server (`.cjs`) is running and serving the `/api/audio-split` endpoint.
--   Backend endpoint `/api/audio-split` successfully initiates the Replicate prediction process.
+-   JavaScript server (`.cjs`) is running and serving the `/api/audio-split` endpoint locally.
+-   Backend endpoint `/api/audio-split` successfully initiates the Replicate prediction process locally.
 -   Frontend triggers the backend endpoint and displays initial feedback (loading, prediction ID, errors).
 -   Next major step is implementing the polling mechanism to retrieve and display the final results.
 
 ## Known Issues
 
--   None currently identified related to the setup or deployment.
+-   None currently identified related to the setup or local development server. Deployment with JS server needs testing.
