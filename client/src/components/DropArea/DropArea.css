@@ -1,2 +1,26 @@
 /* Add component-specific styles for DropArea here if needed */
 /* Using Mantine's styling system is preferred (.clinerules) */
+
+.dropAreaRoot {
+  min-height: 120px; /* Or use Mantine variable if preferred: var(--mantine-line-height-lg) * ~7.5? Check rem(120) */
+  pointer-events: all;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Dynamic border, borderRadius, transition, overflow remain inline */
+}
+
+.dropAreaInnerGroup {
+  pointer-events: none;
+}
+
+.dropAreaIcon {
+  width: 3.25rem; /* Equivalent to rem(52) */
+  height: 3.25rem; /* Equivalent to rem(52) */
+  /* Dynamic color remains inline */
+}
+
+.droppedFileWrapper {
+  text-align: center;
+  padding: 0.625rem; /* Equivalent to rem(10) */
+}

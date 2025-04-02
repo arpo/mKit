@@ -4,6 +4,7 @@ import { useWindowEvent } from '@mantine/hooks'; // Import useWindowEvent
 import { IconUpload, IconFileMusic, IconX } from '@tabler/icons-react';
 import { Dropzone, DropzoneProps } from '@mantine/dropzone';
 import { useDropAreaStore, DropAreaState, DropAreaActions } from './Script'; // Import store, state, and actions
+import './DropArea.css'; // Import the CSS file
 
 function DropArea(props: Partial<DropzoneProps>) {
   const theme = useMantineTheme();
@@ -42,24 +43,22 @@ function DropArea(props: Partial<DropzoneProps>) {
       maxSize={100 * 1024 ** 2} // 100MB limit
       accept={['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/aac', 'audio/flac', 'audio/mp3']} // Define accepted audio types directly
       {...props}
+      // Keep dynamic styles inline, move static ones to CSS
+      className="dropAreaRoot" // Apply root class
       style={{
-        minHeight: rem(120),
-        pointerEvents: 'all',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        border: isDraggingOverWindow ? `2px dashed ${theme.colors.blue[6]}` : `1px solid ${theme.colors.gray[7]}`, // Conditional dashed border, default solid border
-        borderRadius: theme.radius.sm, // Add some rounding
-        transition: 'border-color 0.1s ease-in-out, height 0.3s ease-in-out, min-height 0.3s ease-in-out', // Smooth transitions for border and height
-        overflow: 'hidden', // Prevent content spill during transition
+        border: isDraggingOverWindow ? `2px dashed ${theme.colors.blue[6]}` : `1px solid ${theme.colors.gray[7]}`, // Dynamic border remains inline
+        borderRadius: theme.radius.sm, // Dynamic borderRadius remains inline (could be moved if static)
+        transition: 'border-color 0.1s ease-in-out, height 0.3s ease-in-out, min-height 0.3s ease-in-out', // Dynamic transition remains inline
+        overflow: 'hidden', // Dynamic overflow remains inline
       }}
     >
       {/* Conditionally render content based on whether files are dropped */}
       {droppedFiles.length > 0 ? (
-        <div style={{ textAlign: 'center', padding: rem(10) }}>
-          {/* Use style prop for sizing, consistent with other icons */}
+        <div className="droppedFileWrapper"> {/* Apply wrapper class */}
+          {/* Use style prop for dynamic color, className for static size */}
           <IconFileMusic
-            style={{ width: rem(52), height: rem(52), color: String(theme.colors.dimmed) }}
+            className="dropAreaIcon" // Apply icon class
+            style={{ color: String(theme.colors.dimmed) }} // Dynamic color remains inline
             stroke={1.5}
           />
           <Text size="lg" mt="sm">File(s) dropped:</Text>
@@ -69,22 +68,25 @@ function DropArea(props: Partial<DropzoneProps>) {
           {/* Optionally add a button/icon here to clear the files */}
         </div>
       ) : (
-        <Group justify="center" gap="xl" style={{ pointerEvents: 'none' }}>
+        <Group justify="center" gap="xl" className="dropAreaInnerGroup"> {/* Apply inner group class */}
           <Dropzone.Accept>
             <IconUpload
-              style={{ width: rem(52), height: rem(52), color: String(theme.colors.blue[6]) }} // Explicitly cast
+              className="dropAreaIcon" // Apply icon class
+              style={{ color: String(theme.colors.blue[6]) }} // Dynamic color remains inline
               stroke={1.5}
             />
           </Dropzone.Accept>
           <Dropzone.Reject>
             <IconX
-              style={{ width: rem(52), height: rem(52), color: String(theme.colors.red[6]) }} // Explicitly cast
+              className="dropAreaIcon" // Apply icon class
+              style={{ color: String(theme.colors.red[6]) }} // Dynamic color remains inline
               stroke={1.5}
             />
           </Dropzone.Reject>
           <Dropzone.Idle>
             <IconFileMusic
-              style={{ width: rem(52), height: rem(52), color: String(theme.colors.dimmed) }} // Explicitly cast
+              className="dropAreaIcon" // Apply icon class
+              style={{ color: String(theme.colors.dimmed) }} // Dynamic color remains inline
               stroke={1.5}
             />
           </Dropzone.Idle>
