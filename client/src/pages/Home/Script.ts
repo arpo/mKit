@@ -20,8 +20,14 @@ export interface HomeState {
   };
   predictionStartTime: number | null; // Timestamp when polling started
 
+  // Transcription State
+  isTranscribing: boolean;
+  transcriptionResult: string | null;
+  transcriptionError: string | null;
+
   // Actions
   uploadAudioAndStartPolling: () => Promise<void>;
+  startTranscription: (audioUrl: string) => Promise<void>; // New action
   clearPrediction: () => void;
   checkPredictionStatus: () => Promise<void>; // Made explicit action
   stopPolling: () => void; // Explicit action to stop
@@ -77,6 +83,11 @@ export const useHomeStore = create<HomeState>((set, get) => ({
     logs: [],
   },
   predictionStartTime: null, // Initialize the new state field
+
+  // Transcription State Initialization
+  isTranscribing: false,
+  transcriptionResult: null,
+  transcriptionError: null,
 
   stopPolling: () => {
     if (pollingIntervalId) {
@@ -181,10 +192,28 @@ export const useHomeStore = create<HomeState>((set, get) => ({
            progress: { // Final progress state
                percentage: 100,
                message: statusMessages.succeeded,
-               logs: logs.split('\n')
+                logs: logs.split('\n'),
             }
         });
         stopPolling();
+
+        // --- Trigger Transcription on Success ---
+        // Assuming result.output contains the URLs
+        if (result.output && typeof result.output.vocals === 'string') {
+           console.log(`[Transcription Trigger] Audio split succeeded. Vocal URL: ${result.output.vocals}`);
+           // Call the transcription action asynchronously (don't block polling logic)
+           get().startTranscription(result.output.vocals).catch(transcriptionError => {
+               console.error("[Transcription Trigger] Error starting transcription:", transcriptionError);
+               // Optionally update state if the trigger itself fails, though startTranscription handles its own errors
+               set({ transcriptionError: "Failed to initiate transcription process." });
+           });
+        } else {
+             console.warn("[Transcription Trigger] Audio split succeeded, but vocal URL not found in expected format in result.output:", result.output);
+             // Set an error state specific to transcription start failure due to missing URL
+             set({ transcriptionError: "Audio split successful, but couldn't find vocal track URL for transcription.", isTranscribing: false });
+        }
+        // --- End Transcription Trigger ---
+
       } else if (currentStatus === 'failed' || currentStatus === 'canceled') {
         console.error(`Prediction ${currentStatus}:`, result);
         set({
@@ -212,6 +241,54 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       stopPolling();
     }
   },
+
+  // --- New Transcription Action ---
+  startTranscription: async (audioUrl) => {
+    console.log(`[Transcription] Starting for URL: ${audioUrl}`);
+    set({ isTranscribing: true, transcriptionResult: null, transcriptionError: null });
+
+    try {
+      const response = await fetch('/api/audio-to-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ audio_url: audioUrl }), // Send the required URL
+      });
+
+      if (!response.ok) {
+         const errorData = await response.json().catch(() => ({ // Try to parse error JSON
+            message: `HTTP error! status: ${response.status}`
+         }));
+        throw new Error(errorData.details || errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      // Assuming the endpoint returns the transcription text directly or within a structure
+      // Adjust based on the actual response from controller.cjs -> result.data
+      const result = await response.json();
+      console.log("[Transcription] Success:", result);
+
+      // Extract the text - This might need adjustment based on Fal AI's actual response structure
+      // Example assumes Fal returns { text: "..." } or similar inside the `data` property from the subscribe result
+      const transcribedText = result?.text || (typeof result === 'string' ? result : JSON.stringify(result)); // Flexible fallback
+
+      set({
+        isTranscribing: false,
+        transcriptionResult: transcribedText,
+        transcriptionError: null,
+      });
+
+    } catch (error) {
+      console.error("[Transcription] Failed:", error);
+       const errorMessage = error instanceof Error ? error.message : 'An unknown transcription error occurred.';
+      set({
+        isTranscribing: false,
+        transcriptionResult: null,
+        transcriptionError: `Transcription failed: ${errorMessage}`,
+      });
+    }
+  },
+  // --- End New Transcription Action ---
 
   uploadAudioAndStartPolling: async () => {
     const { checkPredictionStatus, stopPolling } = get();
@@ -309,6 +386,10 @@ export const useHomeStore = create<HomeState>((set, get) => ({
           logs: []
       },
       predictionStartTime: null, // Reset start time on clear
+      // Reset transcription state on clear
+      isTranscribing: false,
+      transcriptionResult: null,
+      transcriptionError: null,
     });
     // Ensure DropArea state is also cleared
     useDropAreaStore.setState({

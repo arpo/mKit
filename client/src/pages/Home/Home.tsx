@@ -1,22 +1,24 @@
-// Removed useEffect and useRef, using logic from Script.ts now
-// Import LoadingOverlay removed, getButtonState added
-// Added Progress, Box components
-import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box } from '@mantine/core';
+import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box, Alert, Paper, Loader } from '@mantine/core'; // Added Alert, Paper, Loader
+import { IconAlertCircle, IconInfoCircle } from '@tabler/icons-react'; // Added icons
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script'; // Still needed for droppedFiles check
 import { useHomeStore, HomeState, getButtonState } from './Script'; // Import the new store, state type, and helper
 
 function Home() {
-  // Select state from the new HomeStore using individual selectors to avoid infinite loops
+  // Select state from the HomeStore using individual selectors
   const isLoading = useHomeStore((state: HomeState) => state.isLoading);
   const predictionId = useHomeStore((state: HomeState) => state.predictionId);
   const predictionStatus = useHomeStore((state: HomeState) => state.predictionStatus);
   const finalResult = useHomeStore((state: HomeState) => state.finalResult);
   const error = useHomeStore((state: HomeState) => state.error);
-  // Select the new progress state
   const progress = useHomeStore((state: HomeState) => state.progress);
 
-  // Select actions from the new HomeStore
+  // Select transcription state
+  const isTranscribing = useHomeStore((state: HomeState) => state.isTranscribing);
+  const transcriptionResult = useHomeStore((state: HomeState) => state.transcriptionResult);
+  const transcriptionError = useHomeStore((state: HomeState) => state.transcriptionError);
+
+  // Select actions from the HomeStore
   const uploadAudioAndStartPolling = useHomeStore((state) => state.uploadAudioAndStartPolling);
   const clearPrediction = useHomeStore((state) => state.clearPrediction);
 
@@ -103,8 +105,30 @@ function Home() {
               </SimpleGrid>
             </Box>
         )}
+
+        {/* Display Transcription Status/Result/Error */}
+        {isTranscribing && (
+          <Box mt="md" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
+            <Stack align="center" gap="xs">
+              <Loader size="sm" />
+              <Text>Transcribing audio...</Text>
+            </Stack>
+          </Box>
+        )}
+        {transcriptionError && !isTranscribing && (
+           <Alert icon={<IconAlertCircle size="1rem" />} title="Transcription Error" color="red" mt="md">
+             {transcriptionError}
+           </Alert>
+        )}
+        {transcriptionResult && !isTranscribing && !transcriptionError && (
+           <Paper shadow="xs" p="md" mt="md" withBorder>
+             <Text fw={500} mb="xs">Transcription:</Text>
+             <Text style={{ whiteSpace: 'pre-wrap' }}>{transcriptionResult}</Text>
+           </Paper>
+        )}
+        {/* End Transcription Display */}
+
       </Stack>
-      {/* Removed closing div */}
     </div>
   );
 }
