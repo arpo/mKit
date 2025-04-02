@@ -1,6 +1,7 @@
 // Removed useEffect and useRef, using logic from Script.ts now
 // Import LoadingOverlay removed, getButtonState added
-import { Button, Text, Stack, Anchor, SimpleGrid } from '@mantine/core';
+// Added Progress, Box components
+import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box } from '@mantine/core';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script'; // Still needed for droppedFiles check
 import { useHomeStore, HomeState, getButtonState } from './Script'; // Import the new store, state type, and helper
@@ -12,6 +13,8 @@ function Home() {
   const predictionStatus = useHomeStore((state: HomeState) => state.predictionStatus);
   const finalResult = useHomeStore((state: HomeState) => state.finalResult);
   const error = useHomeStore((state: HomeState) => state.error);
+  // Select the new progress state
+  const progress = useHomeStore((state: HomeState) => state.progress);
 
   // Select actions from the new HomeStore
   const uploadAudioAndStartPolling = useHomeStore((state) => state.uploadAudioAndStartPolling);
@@ -56,18 +59,35 @@ function Home() {
           </Button>
         )}
 
-        {/* Display Status/Error from HomeStore */}
-        {/* Simplified status display - button text now shows primary status */}
-        {/* Keep error display */}
-        {error && (
-          <Text c="red" size="sm">Error: {error} {predictionId ? `(ID: ${predictionId})` : ''}</Text>
+        {/* Display Progress Panel when loading/processing */}
+        {isLoading && predictionStatus !== 'succeeded' && predictionStatus !== 'failed' && predictionStatus !== 'canceled' && (
+          <Box mt="md" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
+            <Stack gap="xs">
+              <Text fw={500}>{progress.message || 'Processing...'}</Text>
+              <Progress value={progress.percentage} size="sm" animated />
+              <Text size="sm" c="dimmed">
+                {progress.percentage}% complete {predictionId ? `• ID: ${predictionId}` : ''}
+              </Text>
+              {/* Optional: Display last few log lines if helpful */}
+              {/*
+              <Code block>
+                {progress.logs.slice(-3).join('\n')}
+              </Code>
+              */}
+            </Stack>
+          </Box>
         )}
 
-        {/* Display final results if available */}
-        {finalResult && (
-            <div>
+        {/* Display Error from HomeStore */}
+        {error && !isLoading && ( // Show error only when not actively loading something else
+          <Text c="red" size="sm" mt="sm">Error: {error} {predictionId ? `(ID: ${predictionId})` : ''}</Text>
+        )}
+
+        {/* Display final results if available and not actively loading */}
+        {finalResult && !isLoading && (
+            <Box mt="md">
               <Text fw={500} mb="xs">Splitting Complete:</Text>
-              <SimpleGrid cols={2} spacing="xs">
+              <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
                 {/* Add type check for finalResult before mapping */}
                 {finalResult && typeof finalResult === 'object' ? Object.entries(finalResult).map(([key, value]) => {
                   // Ensure value is a non-empty string before rendering Anchor
@@ -80,8 +100,8 @@ function Home() {
                   }
                   return null; // Don't render anything if value is not a string
                 }) : <Text size="sm">Processing result...</Text>}
-            </SimpleGrid>
-          </div>
+              </SimpleGrid>
+            </Box>
         )}
       </Stack>
       {/* Removed closing div */}

@@ -5,13 +5,20 @@ import { useDropAreaStore } from '../../components/DropArea/Script';
 // or manage it within an effect inside the store if using middleware.
 // For simplicity here, we manage it via actions.
 let pollingIntervalId: number | null = null;
+const MAX_PROCESSING_TIME_MS = 3 * 60 * 1000; // 3 minutes timeout
 
 export interface HomeState {
   isLoading: boolean;
   predictionId: string | null;
-  predictionStatus: string | null;
-  finalResult: Record<string, string> | null; // Assuming object structure based on Home.tsx
+  predictionStatus: string | null; // e.g., 'starting', 'processing', 'succeeded', 'failed'
+  finalResult: Record<string, string> | null; // Structure for successful output
   error: string | null;
+  progress: { // New state for detailed progress
+    percentage: number;
+    message: string;
+    logs: string[];
+  };
+  predictionStartTime: number | null; // Timestamp when polling started
 
   // Actions
   uploadAudioAndStartPolling: () => Promise<void>;
@@ -20,13 +27,56 @@ export interface HomeState {
   stopPolling: () => void; // Explicit action to stop
 }
 
+// --- Helper Functions ---
+
+// Tries to parse progress percentage from Replicate logs
+const parseProgress = (logs: string | null | undefined): number => {
+  if (!logs) return 0;
+  // Look for lines like "INFO:spleeter:Progress: 25.3 %" or similar patterns. Adjust regex as needed.
+  // This regex captures a number (integer or float) followed by optional space and '%'
+  const progressMatches = logs.match(/Progress:\s*(\d+(\.\d+)?)\s*%/g);
+  if (progressMatches && progressMatches.length > 0) {
+    // Get the last match in case logs update progress multiple times
+    const lastMatch = progressMatches[progressMatches.length - 1];
+    const percentageMatch = lastMatch.match(/(\d+(\.\d+)?)/);
+    if (percentageMatch && percentageMatch[1]) {
+      const percentage = parseFloat(percentageMatch[1]);
+      console.log(`[Progress Parsing] Found percentage: ${percentage}`);
+      // Cap progress at 100, handle potential edge cases
+      return Math.min(100, Math.max(0, Math.round(percentage)));
+    }
+  }
+  console.log("[Progress Parsing] No percentage found in logs.");
+  return 0; // Default to 0 if no progress line found
+};
+
+
+// Map Replicate status codes to user-friendly messages
+const statusMessages: { [key: string]: string } = {
+  starting: 'Initializing audio processor...',
+  processing: 'Splitting audio tracks...',
+  succeeded: 'Processing complete!',
+  failed: 'Processing failed.',
+  canceled: 'Processing canceled.',
+  uploading: 'Uploading audio file...', // Added for consistency
+  // Add other potential Replicate statuses if observed
+};
+
+// --- Zustand Store Definition ---
+
 export const useHomeStore = create<HomeState>((set, get) => ({
-  // Initial state - mirror relevant parts from DropAreaStore or keep separate
+  // Initial state
   isLoading: useDropAreaStore.getState().isLoading,
   predictionId: useDropAreaStore.getState().predictionId,
-  predictionStatus: null, // Home manages its own polling status view
+  predictionStatus: null,
   finalResult: null,
   error: useDropAreaStore.getState().error,
+  progress: { // Initialize progress state
+    percentage: 0,
+    message: '',
+    logs: [],
+  },
+  predictionStartTime: null, // Initialize the new state field
 
   stopPolling: () => {
     if (pollingIntervalId) {
@@ -37,7 +87,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   },
 
   checkPredictionStatus: async () => {
-    const { predictionId, stopPolling } = get();
+    const { predictionId, stopPolling, predictionStartTime } = get(); // Get predictionStartTime
 
     if (!predictionId) {
       console.log('[Status Check] No prediction ID, stopping.');
@@ -68,27 +118,92 @@ export const useHomeStore = create<HomeState>((set, get) => ({
         throw new Error('No result data received');
       }
 
-      set({ predictionStatus: result.status }); // Update status in store
+      const currentStatus = result.status as string;
+      const logs = result.logs || '';
+      const logBasedPercentage = parseProgress(logs);
+      let timeBasedPercentage = 0;
+      let finalPercentage = logBasedPercentage;
+      let progressMessage = statusMessages[currentStatus] || `Status: ${currentStatus}`; // Fallback message
 
-      if (result.status === 'succeeded') {
+      // --- Time-based Fallback & Timeout ---
+      if (predictionStartTime && !['succeeded', 'failed', 'canceled'].includes(currentStatus)) {
+        const elapsedTimeMs = Date.now() - predictionStartTime;
+        console.log(`[Time Check] Elapsed: ${elapsedTimeMs}ms`);
+
+        // Check for timeout
+        if (elapsedTimeMs > MAX_PROCESSING_TIME_MS) {
+          console.error(`[Timeout] Prediction ${predictionId} exceeded ${MAX_PROCESSING_TIME_MS}ms.`);
+          stopPolling();
+          set({
+            error: 'Processing timed out. Please try again.',
+            isLoading: false,
+            predictionStatus: 'failed', // Mark as failed due to timeout
+            progress: {
+                percentage: get().progress.percentage, // Keep last known percentage
+                message: 'Processing timed out.',
+                logs: get().progress.logs,
+            }
+          });
+          return; // Stop further processing for this check
+        }
+
+        // Calculate time-based percentage (capped at 99% to avoid premature 100%)
+        timeBasedPercentage = Math.min(99, Math.floor((elapsedTimeMs / MAX_PROCESSING_TIME_MS) * 100));
+        finalPercentage = Math.max(logBasedPercentage, timeBasedPercentage);
+
+        // Optionally adjust message if time-based is significantly ahead or logs are missing
+        if (timeBasedPercentage > logBasedPercentage && logBasedPercentage === 0 && currentStatus === 'processing') {
+            // Only override if logs provide no info and time suggests progress
+             progressMessage = `${statusMessages.processing} (estimating...)`;
+        }
+      }
+      // --- End Time-based ---
+
+      console.log(`[Progress Update] Log: ${logBasedPercentage}%, Time: ${timeBasedPercentage}%, Final: ${finalPercentage}%`);
+
+      // Update the store with status and combined progress
+      set({
+        predictionStatus: currentStatus,
+        progress: {
+          percentage: finalPercentage, // Use the blended percentage
+          message: progressMessage,
+          logs: logs.split('\n'), // Store logs as an array
+        }
+      });
+
+      // Handle final states
+      if (currentStatus === 'succeeded') {
         console.log('Prediction succeeded:', result);
-        set({ finalResult: result.output, isLoading: false, error: null });
-        stopPolling();
-      } else if (result.status === 'failed' || result.status === 'canceled') {
-        console.error('Prediction failed/canceled:', result);
         set({
-          error: result.error || `Prediction ${result.status}.`,
+           finalResult: result.output,
+           isLoading: false,
+           error: null,
+           progress: { // Final progress state
+               percentage: 100,
+               message: statusMessages.succeeded,
+               logs: logs.split('\n')
+            }
+        });
+        stopPolling();
+      } else if (currentStatus === 'failed' || currentStatus === 'canceled') {
+        console.error(`Prediction ${currentStatus}:`, result);
+        set({
+          error: result.error || `Prediction ${currentStatus}.`,
           isLoading: false,
-          finalResult: null, // Clear results on failure
+          finalResult: null,
+           progress: { // Final progress state on failure/cancel
+               percentage: get().progress.percentage, // Keep last known percentage or reset? Resetting might be confusing.
+               message: statusMessages[currentStatus] || `Prediction ${currentStatus}.`,
+               logs: logs.split('\n')
+           }
         });
         stopPolling();
       } else {
-        // Still processing, ensure loading is true if not already set by initial upload
+        // Still processing (starting, processing) - ensure isLoading is true
         if (!get().isLoading) {
-           // Only set loading if not already loading from upload
-           // This might need refinement based on how DropArea handles its loading state
-           set({ isLoading: true });
+           set({ isLoading: true }); // Make sure loading state is active during processing steps
         }
+        // Progress is updated via the set call above
       }
     } catch (error) {
       console.error('Status check fetch failed:', error);
@@ -106,12 +221,17 @@ export const useHomeStore = create<HomeState>((set, get) => ({
     // Ensure any previous polling is stopped before starting a new upload
     stopPolling();
     set({
-        isLoading: true,
+        isLoading: true, // Keep only one isLoading
         predictionId: null,
-        predictionStatus: 'uploading',
+        predictionStatus: 'uploading', // Set initial status
         finalResult: null,
         error: null,
-     }); // Reset state for new upload
+        progress: { // Reset progress on new upload
+          percentage: 0,
+          message: statusMessages.uploading, // Show uploading message
+          logs: [],
+        }
+     });
 
     try {
        // Trigger the upload using the DropAreaStore's action
@@ -133,10 +253,20 @@ export const useHomeStore = create<HomeState>((set, get) => ({
          return; // Don't start polling if no ID
        }
 
+       // Successfully got ID, move to processing state
+       set({
+          predictionId: newPredictionId,
+          isLoading: true,
+          predictionStatus: 'processing', // Or 'starting' if Replicate uses that first
+          progress: {
+              percentage: 0, // Keep at 0 until first status check returns logs
+              message: statusMessages.starting || statusMessages.processing, // Show appropriate message
+              logs: []
+          },
+          predictionStartTime: Date.now(), // Record start time *before* first check
+       });
 
-       set({ predictionId: newPredictionId, isLoading: true, predictionStatus: 'processing' }); // Update HomeStore state
-
-       console.log(`[Polling] Starting for ID: ${newPredictionId}`);
+       console.log(`[Polling] Starting for ID: ${newPredictionId}. Start time: ${get().predictionStartTime}`);
 
        // Perform initial check immediately
        await checkPredictionStatus();
@@ -173,11 +303,20 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       predictionStatus: null,
       finalResult: null,
       error: null,
-      // Need to clear droppedFiles too? Home doesn't own it, DropArea does.
-      // Maybe DropArea should expose a full reset? For now, clear Home state.
+      progress: { // Reset progress on clear
+          percentage: 0,
+          message: '',
+          logs: []
+      },
+      predictionStartTime: null, // Reset start time on clear
     });
-    // Ensure DropArea state is also cleared if necessary, DropArea's clearFiles should handle its state.
-     useDropAreaStore.setState({ predictionId: null, error: null, isLoading: false /* any other relevant DropArea state */ });
+    // Ensure DropArea state is also cleared
+    useDropAreaStore.setState({
+      predictionId: null,
+      error: null,
+      isLoading: false,
+      // droppedFiles: [], // Assuming DropAreaStore manages its files
+    });
 
   },
 
