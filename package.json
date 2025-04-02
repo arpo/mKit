@@ -101,14 +101,14 @@
   "scripts": {
     "predev": "pkill -f nodemon || true && pkill -f 'vite' || true",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:server": "nodemon --exec tsx src/server.ts",
+    "dev:server": "nodemon --exec tsx server/server.ts",
     "dev:client": "cd client && npm run dev",
     "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "cd client && npm run build",
     "build": "npm run build:server && npm run build:client",
     "start": "NODE_ENV=production node dist/server.js",
-    "format": "prettier --write \"src/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\"",
+    "format": "prettier --write \"server/**/*.ts\" \"client/src/**/*.{ts,tsx,css}\"",
     "deploy": "npm run build && gcloud builds submit --tag us-central1-docker.pkg.dev/mkit-001/mkit-docker-repo/mkit-app:latest . && gcloud run deploy mkit-service --image=us-central1-docker.pkg.dev/mkit-001/mkit-docker-repo/mkit-app:latest --region=us-central1 --platform=managed --service-account=270332987989-compute@developer.gserviceaccount.com --allow-unauthenticated --project=mkit-001"
   },
   "keywords": [],

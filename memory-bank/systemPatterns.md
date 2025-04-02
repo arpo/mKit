@@ -2,7 +2,7 @@
 
 ## Backend
 
--   **Framework:** Node.js with Express.js (`src/server.ts`).
+-   **Framework:** Node.js with Express.js (`server/server.ts`).
 -   **API:** Exposes API endpoints (likely under `/api/` prefix).
 -   **Serving:** Serves static frontend assets (`client/dist`) in production and handles client-side routing fallback.
 

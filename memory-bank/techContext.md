@@ -23,7 +23,7 @@
 
 ## Tooling & Conventions
 
--   **Monorepo Structure:** Backend in `/src`, Frontend in `/client`. Shared scripts in root `package.json`.
+-   **Monorepo Structure:** Backend in `/server`, Frontend in `/client`. Shared scripts in root `package.json`.
 -   **Component Logic:** Logic/state (`zustand`) resides in `Script.ts`, separate from markup (`Component.tsx`).
 -   **`useEffect` Avoidance:** See `systemPatterns.md` for the pattern using exported functions from `Script.ts`.
 -   **Type Checking:** TypeScript (via `npm run build`)

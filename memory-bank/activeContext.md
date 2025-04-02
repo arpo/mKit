@@ -2,7 +2,7 @@
 
 ## Current Focus
 
--   Completing the initial integration of a React frontend (`/client`) into the existing Node.js backend (`/src`).
+-   Completing the initial integration of a React frontend (`/client`) into the existing Node.js backend (`/server`).
 -   Establishing and documenting the core development patterns, specifically the separation of component logic (`Script.ts`) from markup (`Component.tsx`) and the strict avoidance of `useEffect` for initialization/setup logic.
 
 ## Recent Changes
@@ -13,7 +13,7 @@
 -   Implemented `Counter` component example.
 -   Configured routing in `main.tsx`.
 -   Updated `vite.config.ts` for API proxying.
--   Updated `src/server.ts` for production static file serving and routing fallback.
+-   Updated `server/server.ts` for production static file serving and routing fallback.
 -   Updated root `package.json` scripts for concurrent dev/build.
 -   Refactored `Counter` component:
     -   Renamed `Store.ts` to `Script.ts`.

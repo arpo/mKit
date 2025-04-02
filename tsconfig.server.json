@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "node16",
-    "rootDir": "src",
+    "rootDir": "server",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "src/ts/**/*"]
+  "include": ["server/**/*"],
+  "exclude": ["node_modules", "server/ts/**/*"]
 }

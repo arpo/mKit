@@ -2,7 +2,7 @@
 
 ## What Works
 
--   **Backend Server:** Basic Express server setup (`src/server.ts`).
+-   **Backend Server:** Basic Express server setup (`server/server.ts`).
 -   **Frontend Scaffolding:** React/Vite/TS project initialized in `/client`.
 -   **Dependencies:** `react-router-dom`, `zustand`, `@mantine/core`, `@mantine/hooks` installed in client.
 -   **Core Structure:** `components`, `pages`, `styles` directories created in client.
