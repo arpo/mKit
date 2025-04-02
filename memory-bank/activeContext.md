@@ -27,9 +27,15 @@
 -   Created automated `npm run deploy` script in root `package.json` combining build, image push, and Cloud Run deployment steps.
 -   Updated `DEPLOY-FROM-SCRATCH-GUIDE.md` to include the automated script setup and details.
 -   Updated `README.md` with deployment instructions (Cline method and `npm run deploy`).
+-   Installed Mantine UI library (`@mantine/core`, `@mantine/hooks`) in `/client`.
+-   Integrated MantineProvider in `client/src/main.tsx` with default dark theme.
+-   Updated `memory-bank/techContext.md`.
+-   Refactored `Counter` component (`client/src/components/Counter/Counter.tsx`) to use Mantine components (`Paper`, `Text`, `Button`).
+-   Removed conflicting custom styles from `client/src/components/Counter/Counter.css`.
 
 ## Next Steps
 
 -   Build out further components and pages following the established patterns (`Component.tsx`/`Script.ts`/`Component.css`, no `useEffect`).
+-   Start using Mantine components for UI development.
 -   Implement actual API interactions using the backend proxy.
--   Refine global and component styles.
+-   Refine global styles and potentially leverage Mantine theme customization.

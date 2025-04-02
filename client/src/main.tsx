@@ -1,9 +1,12 @@
 import React from 'react'; // Explicit import for clarity
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { MantineProvider } from '@mantine/core';
 
 // Import global styles
 import './styles/global.css';
+// Import Mantine core styles
+import '@mantine/core/styles.css';
 
 // Import page components
 import Home from './pages/Home/Home';
@@ -36,13 +39,15 @@ const root = createRoot(container);
 // Render the app
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Layout /> {/* Include the basic layout/navigation */}
-      <Routes>
+    <MantineProvider defaultColorScheme="dark">
+      <BrowserRouter>
+        <Layout /> {/* Include the basic layout/navigation */}
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        {/* Add other routes here */}
-      </Routes>
-    </BrowserRouter>
+          {/* Add other routes here */}
+        </Routes>
+      </BrowserRouter>
+    </MantineProvider>
   </React.StrictMode>,
 );

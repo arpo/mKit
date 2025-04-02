@@ -4,11 +4,12 @@
 
 -   **Backend Server:** Basic Express server setup (`src/server.ts`).
 -   **Frontend Scaffolding:** React/Vite/TS project initialized in `/client`.
--   **Dependencies:** `react-router-dom`, `zustand` installed in client.
+-   **Dependencies:** `react-router-dom`, `zustand`, `@mantine/core`, `@mantine/hooks` installed in client.
 -   **Core Structure:** `components`, `pages`, `styles` directories created in client.
 -   **Routing:** Basic routing between Home and About pages configured (`client/src/main.tsx`).
--   **Styling:** Global (`global.css`) and component (`Counter.css`) styling setup.
--   **Counter Component:** Functional example component (`Counter.tsx`) with separate logic (`Script.ts`) using Zustand.
+-   **UI Library:** Mantine provider configured with default dark theme in `client/src/main.tsx`.
+-   **Styling:** Mantine core styles + Global (`global.css`). Custom `Counter.css` styles removed.
+-   **Counter Component:** Functional example component (`Counter.tsx`) refactored to use Mantine components (`Paper`, `Text`, `Button`) with separate logic (`Script.ts`) using Zustand.
 -   **`useEffect` Avoidance Pattern:** Implemented and documented; logic moved to `Script.ts` and called directly.
 -   **Build/Dev Scripts:** Root `package.json` updated for client/server development and builds.
 -   **Server Integration:** Vite proxy and production static serving configured.
@@ -19,16 +20,18 @@
 ## What's Left to Build
 
 -   Actual features beyond the basic setup/counter example.
+-   Building UI using Mantine components.
 -   API endpoint implementation on the backend (`/api/*`).
 -   Integration of API calls within frontend `Script.ts` files.
--   More complex components and pages.
+-   More complex components and pages using Mantine.
 -   Error handling, loading states.
 -   Testing (Unit, Integration, E2E).
 
 ## Current Status
 
 -   Initial project setup and core pattern definition complete.
--   Ready for feature development using the established structure and patterns.
+-   Mantine UI library integrated with default dark theme.
+-   Ready for feature development using the established structure, patterns, and Mantine components.
 
 ## Known Issues
 

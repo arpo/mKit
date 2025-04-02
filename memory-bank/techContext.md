@@ -17,7 +17,8 @@
 -   **Package Manager:** npm (client level)
 -   **Routing:** `react-router-dom`
 -   **State Management:** `zustand`
--   **Styling:** CSS (global + component-specific modules)
+-   **UI Library:** Mantine (`@mantine/core`, `@mantine/hooks`) - Configured with default dark theme.
+-   **Styling:** Mantine core styles + CSS (global + component-specific modules)
 -   **Development:** Vite Dev Server (with HMR), API proxy configured in `vite.config.ts`.
 
 ## Tooling & Conventions

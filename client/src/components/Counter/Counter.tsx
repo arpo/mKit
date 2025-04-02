@@ -1,6 +1,7 @@
 
 import { useCounterStore, CounterState, initCounter } from './Script'; // Import from Script.ts and include initCounter
-import './Counter.css';
+// import './Counter.css'; // Removed as styles are handled by Mantine
+import { Button, Text, Paper } from '@mantine/core'; // Import Mantine components
 
 function Counter() {
   // Call the initialization logic from Script.ts
@@ -13,12 +14,13 @@ function Counter() {
   const incrementAction = useCounterStore((state: CounterState) => state.increment);
 
   return (
-    <div className="counter-container">
-      <p>This is the Counter component.</p>
-      <button onClick={incrementAction}>
+    // Using Paper for themed container and spacing
+    <Paper withBorder shadow="xs" p="md" style={{ textAlign: 'center', margin: '1rem' }}>
+      <Text>This is the Counter component using Mantine.</Text>
+      <Button onClick={incrementAction} mt="sm">
         Clicked {currentCount} times
-      </button>
-    </div>
+      </Button>
+    </Paper>
   );
 }
 
