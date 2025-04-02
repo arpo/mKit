@@ -25,6 +25,12 @@ This file documents key patterns, preferences, and project intelligence learned 
     *   Define stores (`create<...>`) within the relevant component/page's `Script.ts` file.
     *   Export state interfaces (e.g., `export interface MyState { ... }`) from `Script.ts` for use in `.tsx` selectors.
 
+5.  **Styling (Mantine Preference):**
+    *   **Prefer Mantine's styling system:** Utilize Mantine component props (e.g., `p`, `m`, `ta`), theme variables (`theme.spacing`, `theme.colors`), and style functions (`createStyles`) for styling.
+    *   **Avoid inline `style` props.**
+    *   Use separate `.css` files (`ComponentName.css`) only when Mantine's system is insufficient or for complex, non-Mantine-related styling.
+    *   Leverage Mantine's theme (`client/src/main.tsx`) for consistent spacing, colors, and typography.
+
 ## General & Workflow
 
 *   **Memory Bank:** Keep the `/memory-bank` directory updated, especially `activeContext.md` and `progress.md`, to ensure continuity.

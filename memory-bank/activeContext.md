@@ -32,6 +32,7 @@
 -   Updated `memory-bank/techContext.md`.
 -   Refactored `Counter` component (`client/src/components/Counter/Counter.tsx`) to use Mantine components (`Paper`, `Text`, `Button`).
 -   Removed conflicting custom styles from `client/src/components/Counter/Counter.css`.
+-   Refactored `Counter.tsx` again to remove inline styles, replacing them with Mantine component props (`ta`, `m`) per `.clinerules`.
 
 ## Next Steps
 

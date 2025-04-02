@@ -11,7 +11,7 @@
 -   **Framework:** React with TypeScript, built using Vite.
 -   **Routing:** `react-router-dom` for client-side navigation, configured in `client/src/main.tsx`.
 -   **State Management:** Zustand (`zustand`). State stores are typically defined within the logic file for the relevant component or page.
--   **Styling:** Global styles in `client/src/styles/global.css`, component-specific styles in `[ComponentName].css`.
+-   **Styling:** Primarily using Mantine's styling system (component props, theme variables, style functions). Global styles in `client/src/styles/global.css`. Separate component CSS files (`[ComponentName].css`) are used only when Mantine's system is insufficient or for non-Mantine elements. Inline styles (`style` prop) are avoided (see `.clinerules`).
 
 ## Component Structure & Logic Separation
 
