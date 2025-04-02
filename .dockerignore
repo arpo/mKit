@@ -4,8 +4,15 @@ node_modules
 # Ignore source TypeScript files, as we only need the compiled JS in dist/
 src/
 *.ts
-tsconfig.json
-tsconfig.server.json
+# Keep tsconfig files, vite config, and client source files as they're needed for building
+!tsconfig.json
+!tsconfig.server.json
+!client/tsconfig.json
+!client/tsconfig.app.json
+!client/tsconfig.node.json
+!client/vite.config.ts
+!client/src/**/*.ts
+!client/src/**/*.tsx
 
 # Ignore development/build tooling configuration
 eslint.config.js
@@ -15,13 +22,11 @@ browser-sync.config.cjs
 .git
 .vscode
 
-# Ignore build output directory if it exists locally (it will be copied from build stage if multi-stage build is used, but here we copy it directly)
-# dist # Keep this commented out as we copy dist/ in the Dockerfile
-
-# Ignore documentation and lock files if not needed in the final image
+# Ignore documentation and non-essential files
 README.md
-package-lock.json # Keep this commented out - needed by npm ci
+memory-bank/
 
-# Ignore the Dockerfile itself
-Dockerfile
-.dockerignore
+# Keep these files as they're needed for the build
+# package-lock.json
+# Dockerfile
+# .dockerignore

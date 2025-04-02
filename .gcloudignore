@@ -5,6 +5,7 @@
 # Ensure compiled code, static assets, Dockerfile, and package files ARE uploaded
 # The ! prefix means "do not ignore"
 !dist/
+!client/dist/
 !public/
 !Dockerfile
 !package.json
@@ -13,6 +14,7 @@
 !client/package-lock.json
 
 # Files and directories to ignore:
+memory-bank/
 
 # Node Modules (will be installed during Docker build)
 node_modules/

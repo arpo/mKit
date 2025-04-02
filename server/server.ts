@@ -11,18 +11,28 @@ const app: Express = express();
 // Default to 8080 if not set (common practice for Cloud Run).
 const port: number = parseInt(process.env.PORT || '8080', 10);
 
+// Health check endpoint
+app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ status: 'OK' });
+});
+
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public'))); // Keep serving existing public files if needed
 
 // --- New: Serve React App Static Files (Production Only) ---
 if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.join(__dirname, '../../client/dist'); // Correct path relative to compiled server.ts
+  // Use absolute path for client build
+  const clientBuildPath = '/app/client/dist';
+  console.log('Client build path:', clientBuildPath);
+  
   app.use(express.static(clientBuildPath));
 
   // --- New: Catch-all for Client-Side Routing (Production Only) ---
   // This should come after API routes and other static file serving
   app.get('*', (_req: Request, res: Response): void => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    console.log('Serving index from:', indexPath);
+    res.sendFile(indexPath);
   });
 } else {
   // Optional: Add a message or default route for development if needed
