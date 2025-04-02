@@ -16,13 +16,13 @@ import About from './pages/About/About';
 function Layout() {
   return (
     <div>
-      <nav>
+      {/* <nav>
         <ul style={{ listStyle: 'none', padding: 0, display: 'flex', gap: '1rem' }}>
           <li><Link to="/">Home</Link></li>
           <li><Link to="/about">About</Link></li>
         </ul>
       </nav>
-      <hr />
+      <hr /> */}
       {/* Routes will render their elements here */}
     </div>
   );

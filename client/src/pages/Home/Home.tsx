@@ -11,9 +11,7 @@ function Home() {
 
   return (
     <div>
-      <h1>Home Page</h1>
-      <p>Welcome to the home page!</p>
-      <Counter /> {/* Include the Counter component here */}
+      <h1>mKit</h1>
     </div>
   );
 }
