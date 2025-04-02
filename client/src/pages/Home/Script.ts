@@ -221,3 +221,40 @@ useDropAreaStore.subscribe(
 //      // checkPredictionStatus(); // Decide if auto-polling should start on load
 //   }
 // }
+
+// Helper to determine button appearance based on state
+export const getButtonState = (isLoading: boolean, status: string | null) => {
+  // Default state: Ready to start
+  if (!isLoading && !status) {
+    return { text: 'Start Splitting', color: 'blue', loading: false, disabled: false };
+  }
+
+  // Loading states
+  if (isLoading) {
+    switch (status) {
+      case 'uploading':
+        return { text: 'Uploading...', color: 'blue', loading: true, disabled: true };
+      case 'processing':
+      case 'starting': // Added based on Replicate docs
+        return { text: 'Processing...', color: 'yellow', loading: true, disabled: true };
+      // Add other potential Replicate statuses if needed: 'output_file_present', 'webhook_processing' etc.
+      default:
+        // Covers null status during initial load or unknown statuses during polling
+        return { text: 'Loading...', color: 'blue', loading: true, disabled: true };
+    }
+  }
+
+  // Final non-loading states (should ideally be handled by finalResult, but status might persist briefly)
+  // We don't show the Start button when there's a final result, so these shouldn't typically be hit for the Start button itself.
+  // They might be relevant if we adapted this for a general status display.
+  // switch (status) {
+  //   case 'succeeded':
+  //     return { text: 'Completed', color: 'green', loading: false, disabled: true }; // Start button wouldn't show here
+  //   case 'failed':
+  //   case 'canceled':
+  //     return { text: 'Failed', color: 'red', loading: false, disabled: true }; // Start button wouldn't show here
+  // }
+
+  // Fallback for unexpected non-loading states
+  return { text: 'Start Splitting', color: 'blue', loading: false, disabled: false };
+};
