@@ -23,7 +23,18 @@ This file documents key patterns, preferences, and project intelligence learned 
 4.  **State Management:**
     *   Use `zustand` for state management.
     *   Define stores (`create<...>`) within the relevant component/page's `Script.ts` file.
-    *   Export state interfaces (e.g., `export interface MyState { ... }`) from `Script.ts` for use in `.tsx` selectors.
+    *   Export state interfaces (e.g., `export interface MyState { ... }`) from `Script.ts`.
+    *   **CRITICAL Selector Pattern:** **ALWAYS use individual selectors** for each piece of state required by a component. **DO NOT use object selectors** (e.g., `useStore(state => ({ key1: state.key1, key2: state.key2 }))`).
+        *   **Reasoning:** Object selectors return a new object reference on every render, which bypasses Zustand's shallow equality check and can lead to infinite re-render loops, especially when combined with `useEffect` or other dependencies. Individual selectors ensure components only re-render when the specific state slice they depend on changes.
+        *   **Example (Good):**
+            ```typescript
+            const isLoading = useMyStore((state) => state.isLoading);
+            const items = useMyStore((state) => state.items);
+            ```
+        *   **Example (Bad - Avoid):**
+            ```typescript
+            // const { isLoading, items } = useMyStore((state) => ({ isLoading: state.isLoading, items: state.items }));
+            ```
 
 5.  **Styling (Mantine Preference):**
     *   **Prefer Mantine's styling system:** Utilize Mantine component props (e.g., `p`, `m`, `ta`), theme variables (`theme.spacing`, `theme.colors`), and style functions (`createStyles`) for styling.

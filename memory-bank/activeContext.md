@@ -1,8 +1,8 @@
-# Active Context: mKit (2025-04-02 2:39 PM)
+# Active Context: mKit (2025-04-02 8:30 PM)
 
 ## Current Focus
 
--   Implement client-side polling in `DropArea/Script.ts` or `Home.tsx` to check Replicate prediction status using the prediction ID.
+-   Implement client-side polling for Replicate prediction status (likely in `Home/Script.ts` now that state is consolidated there).
 -   Display the final split audio results from Replicate on the frontend.
 -   Refine error handling and UI feedback for the audio splitting process.
 
@@ -77,10 +77,11 @@
     -   `DropArea/Script.ts` includes state (`isLoading`, `predictionResult`, `error`) and `uploadAudio` action.
     -   Updated `Home.tsx` to call `uploadAudio` on button click, display loading overlay, errors, and initial prediction ID.
     -   Fixed Mantine `Text` component import issue in `Home.tsx`.
+-   **Fixed Infinite Loop:** Corrected an infinite re-render loop in `Home.tsx` by switching from a Zustand object selector to individual state selectors, adhering to the pattern now documented in `.clinerules` and `systemPatterns.md`.
 
 ## Next Steps
 
--   Implement client-side polling for Replicate prediction status.
+-   Implement client-side polling for Replicate prediction status (consider adding logic to `Home/Script.ts`).
 -   Display final results from Replicate.
 -   Add ability to clear dropped files in `DropArea`.
 -   Thoroughly test the audio splitting feature locally and potentially on Cloud Run.

@@ -10,7 +10,16 @@
 
 -   **Framework:** React with TypeScript, built using Vite.
 -   **Routing:** `react-router-dom` for client-side navigation, configured in `client/src/main.tsx`.
--   **State Management:** Zustand (`zustand`). State stores are typically defined within the logic file for the relevant component or page.
+-   **State Management:** Zustand (`zustand`). State stores are typically defined within the logic file (`Script.ts`) for the relevant component or page.
+    -   **Selector Pattern:** To prevent unnecessary re-renders caused by Zustand's default shallow equality check, **use individual selectors** for each piece of state needed by a component, rather than selecting a single object containing multiple state properties.
+        ```typescript
+        // Good: Individual selectors
+        const isLoading = useMyStore((state) => state.isLoading);
+        const data = useMyStore((state) => state.data);
+
+        // Avoid: Object selector (can cause re-renders even if unchanged properties differ)
+        // const { isLoading, data } = useMyStore((state) => ({ isLoading: state.isLoading, data: state.data }));
+        ```
 -   **Styling:** Primarily using Mantine's styling system (component props, theme variables, style functions). Global styles in `client/src/styles/global.css`. Separate component CSS files (`[ComponentName].css`) are used only when Mantine's system is insufficient or for non-Mantine elements. Inline styles (`style` prop) are avoided (see `.clinerules`).
 
 ## Component Structure & Logic Separation

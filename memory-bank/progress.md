@@ -1,4 +1,4 @@
-# Progress: mKit (2025-04-02 2:39 PM)
+# Progress: mKit (2025-04-02 8:31 PM)
 
 ## What Works
 
@@ -38,6 +38,7 @@
     -   "Start Splitting" button appears conditionally after file drop.
     -   Button click triggers `uploadAudio` action from `DropArea` store.
     -   Loading overlay, error messages, and initial prediction ID are displayed.
+    -   **Zustand Selector Fix:** Infinite loop in `Home.tsx` resolved by switching to individual selectors.
 
 ## What's Left to Build
 
@@ -55,8 +56,8 @@
 -   `DropArea` component allows audio file upload.
 -   JavaScript server (`.cjs`) is running and serving the `/api/audio-split` endpoint locally.
 -   Backend endpoint `/api/audio-split` successfully initiates the Replicate prediction process locally.
--   Frontend triggers the backend endpoint and displays initial feedback (loading, prediction ID, errors).
--   Next major step is implementing the polling mechanism to retrieve and display the final results.
+-   Frontend triggers the backend endpoint and displays initial feedback (loading, prediction ID, errors). Frontend rendering is stable after Zustand selector fix.
+-   Next major step is implementing the polling mechanism (likely in `Home/Script.ts`) to retrieve and display the final results.
 
 ## Known Issues
 
