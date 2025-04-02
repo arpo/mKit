@@ -1,54 +1,43 @@
-import { useState } from 'react'; // Import useState
+// Remove useState import as it's no longer needed for drag state
 import { Group, Text, rem, useMantineTheme } from '@mantine/core';
 import { useWindowEvent } from '@mantine/hooks'; // Import useWindowEvent
 import { IconUpload, IconFileMusic, IconX } from '@tabler/icons-react';
 import { Dropzone, DropzoneProps } from '@mantine/dropzone';
-// import { useDropAreaStore } from './Script'; // Uncomment when store is used
+import { useDropAreaStore, DropAreaState, DropAreaActions } from './Script'; // Import store, state, and actions
 
 function DropArea(props: Partial<DropzoneProps>) {
   const theme = useMantineTheme();
-  const [isDraggingOverWindow, setIsDraggingOverWindow] = useState(false);
-  // const { someState, someAction } = useDropAreaStore(); // Example state access
+  // Get state and actions from the Zustand store
+  const isDraggingOverWindow = useDropAreaStore((state: DropAreaState) => state.isDraggingOverWindow);
+  const { setDragging, handleFileDrop, handleFileReject } = useDropAreaStore.getState();
 
-  // Window event listeners
+  // Window event listeners updated to use store action
   useWindowEvent('dragenter', () => {
-    setIsDraggingOverWindow(true);
+    setDragging(true);
   });
 
   useWindowEvent('dragleave', (event) => {
-    // Check if the mouse left the viewport
+    // Check if the mouse left the viewport and update store
     if (
       event.clientY <= 0 ||
       event.clientX <= 0 ||
       event.clientX >= window.innerWidth ||
       event.clientY >= window.innerHeight
     ) {
-      setIsDraggingOverWindow(false);
+      setDragging(false);
     }
   });
 
   useWindowEvent('drop', () => {
-    setIsDraggingOverWindow(false);
+    setDragging(false); // Also reset on drop via window event
   });
 
-
-  const handleDrop = (files: File[]) => {
-    setIsDraggingOverWindow(false); // Ensure border is removed on drop
-    console.log('Accepted files:', files);
-    // Placeholder: Add logic to handle files, e.g., update state via Script.ts
-    // someAction.setFiles(files);
-  };
-
-  const handleReject = (fileRejections: any[]) => {
-    setIsDraggingOverWindow(false); // Ensure border is removed on rejection
-    console.error('Rejected files:', fileRejections);
-    // Placeholder: Add logic for rejected files if needed
-  };
+  // handleDrop and handleReject are now directly passed from the store
 
   return (
     <Dropzone
-      onDrop={handleDrop}
-      onReject={handleReject}
+      onDrop={handleFileDrop} // Use action from store
+      onReject={handleFileReject} // Use action from store
       maxSize={100 * 1024 ** 2} // 100MB limit
       accept={['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/aac', 'audio/flac', 'audio/mp3']} // Define accepted audio types directly
       {...props}
@@ -58,8 +47,9 @@ function DropArea(props: Partial<DropzoneProps>) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        border: isDraggingOverWindow ? `2px dashed ${theme.colors.blue[6]}` : 'none', // Conditional border
-        transition: 'border 0.1s ease-in-out', // Smooth transition
+        border: isDraggingOverWindow ? `2px dashed ${theme.colors.blue[6]}` : `1px solid ${theme.colors.gray[7]}`, // Conditional dashed border, default solid border
+        borderRadius: theme.radius.sm, // Add some rounding
+        transition: 'border-color 0.1s ease-in-out', // Smooth transition for color change
       }}
     >
       <Group justify="center" gap="xl" style={{ pointerEvents: 'none' }}>
