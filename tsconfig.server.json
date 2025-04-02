@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "node16",
+    "module": "NodeNext", // Revert to NodeNext for ESM
+    "moduleResolution": "nodenext", // Add back for NodeNext
     "rootDir": "server",
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true, // Explicitly add this
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true
   },
   "include": ["server/**/*"],
-  "exclude": ["node_modules", "server/ts/**/*"]
+  "exclude": ["node_modules"] // Remove server/ts/**/* from exclusion
 }

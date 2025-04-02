@@ -1,9 +1,10 @@
-# Active Context: mKit (2025-04-02 1:55 PM)
+# Active Context: mKit (2025-04-02 2:09 PM)
 
 ## Current Focus
 
--   Continue building out application features using the established patterns and Mantine UI library.
--   Implement state management for dropped files in `DropArea` (e.g., clearing, uploading).
+-   Implement client-side polling in `DropArea/Script.ts` or `Home.tsx` to check Replicate prediction status using the prediction ID.
+-   Display the final split audio results from Replicate on the frontend.
+-   Refine error handling and UI feedback for the audio splitting process.
 
 ## Recent Changes
 
@@ -49,9 +50,27 @@
     -   Added height transition animation.
     -   Moved static styles to `DropArea.css`.
 -   Added `DropArea` component to `client/src/pages/Home/Home.tsx`.
+-   **Setup `/api/audio-split` Endpoint:**
+    -   Created `.env` file with `REPLICATE_API_TOKEN`.
+    -   Installed `dotenv`, `replicate`, `multer` dependencies.
+    -   Created `server/ts/audio-split/` directory with `controller.ts` and `routes.ts`.
+    -   Implemented Replicate API call logic in `controller.ts` (using base64 data URI).
+    -   Implemented Express route in `routes.ts` using `multer` for file upload.
+    -   Integrated `dotenv` and mounted the router in `server/server.ts`.
+    -   Fixed `tsconfig.server.json` exclusion bug (prior to JS conversion).
+-   **Converted Server to JavaScript:**
+    -   Renamed `.ts` files (`server.ts`, `controller.ts`, `routes.ts`) to `.js`.
+    -   Removed TypeScript syntax (types, imports) and converted to CommonJS (`require`, `module.exports`).
+    -   Updated `package.json` scripts (`dev:server`, `start`, `build`, `format`, `deploy`) to remove TS compilation and run `.js` files directly.
+    -   Removed `"type": "module"` from `package.json`.
+-   **Integrated Frontend Upload (Remains Unchanged):**
+    -   Updated `DropArea/Script.ts` with state (`isLoading`, `predictionResult`, `error`) and `uploadAudio` action.
+    -   Updated `Home.tsx` to call `uploadAudio` on button click, display loading overlay, errors, and initial prediction ID.
+    -   Fixed Mantine `Text` component import issue in `Home.tsx`.
 
 ## Next Steps
 
--   Thoroughly test the deployed application on Cloud Run.
--   Implement state management logic within `DropArea/Script.ts` (e.g., clearing files, triggering uploads).
--   Implement API interactions between the frontend and backend.
+-   Implement client-side polling for Replicate prediction status.
+-   Display final results from Replicate.
+-   Add ability to clear dropped files in `DropArea`.
+-   Thoroughly test the audio splitting feature locally and potentially on Cloud Run.
