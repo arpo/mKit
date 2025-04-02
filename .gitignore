@@ -125,7 +125,6 @@ dist
 .vscode-test
 
 # Service Account Keys
-service-account-key.json
 deployer-key.json
 *.json # If key has a different name
 

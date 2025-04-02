@@ -5,17 +5,17 @@ FROM node:18-alpine
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json (or npm-shrinkwrap.json)
-# Using package-lock.json ensures reproducible installs
+# Copy package files for both server and client
 COPY package*.json ./
+COPY client/package*.json ./client/
 
-# Install production dependencies using npm ci for faster, reliable builds
-# --only=production avoids installing devDependencies
+# Install dependencies for server and client
 RUN npm ci --only=production
+RUN cd client && npm ci --only=production && cd ..
 
-# Bundle app source code
-# Copy the compiled TypeScript code (dist) and static assets (public)
+# Copy built files
 COPY dist/ ./dist/
+COPY client/dist/ ./client/dist/
 COPY public/ ./public/
 
 # The application listens on the port defined by the PORT environment variable.

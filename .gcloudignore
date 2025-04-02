@@ -9,6 +9,8 @@
 !Dockerfile
 !package.json
 !package-lock.json
+!client/package.json
+!client/package-lock.json
 
 # Files and directories to ignore:
 
@@ -70,7 +72,6 @@ web_modules/
 .next
 out
 .nuxt
-# public # Already handled by !public/ above
 .vuepress/dist
 .temp
 .docusaurus
@@ -86,5 +87,5 @@ out
 .pnp.*
 README.md
 
-# Ignore downloaded service account keys!
-*.json
+# Ignore service account keys but not package.json files
+deployer-key.json
