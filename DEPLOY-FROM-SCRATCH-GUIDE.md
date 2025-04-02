@@ -95,35 +95,100 @@
 ## Docker Configuration
 
 1. **Dockerfile Structure:**
-   Ensure your Dockerfile properly handles both server and client builds:
+   Use a multi-stage build approach for optimal image size and security:
    ```dockerfile
-   # Copy package files for both server and client
+   # Use the official Node.js image as base
+   FROM node:18-alpine as builder
+
+   # Set working directory
+   WORKDIR /app
+
+   # Copy package files
    COPY package*.json ./
-   COPY client/package*.json ./client/
 
-   # Install dependencies for both
+   # Install dependencies
    RUN npm ci --only=production
-   RUN cd client && npm ci --only=production && cd ..
 
-   # Copy built files
-   COPY dist/ ./dist/
-   COPY client/dist/ ./client/dist/
-   COPY public/ ./public/
+   # Copy compiled server files and pre-built client dist
+   COPY dist ./dist
+   COPY client/dist ./client/dist
+   COPY public ./public
+
+   # Use a smaller image for runtime
+   FROM node:18-alpine
+
+   # Set working directory
+   WORKDIR /app
+
+   # Copy built files from builder
+   COPY --from=builder /app/package*.json ./
+   COPY --from=builder /app/node_modules ./node_modules
+   COPY --from=builder /app/dist ./dist
+   COPY --from=builder /app/client/dist ./client/dist
+   COPY --from=builder /app/public ./public
+
+   # Expose port (matches server.ts PORT env var)
+   EXPOSE 8080
+
+   # Health check
+   HEALTHCHECK --interval=30s --timeout=3s \
+     CMD wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1
+
+   # Start the server
+   CMD ["node", "dist/server.js"]
    ```
 
 2. **Required .dockerignore Configuration:**
    ```
-   # Ignore development files
+   # Ignore node_modules, as dependencies will be installed inside the container
    node_modules
-   npm-debug.log
-   
-   # Keep these files (add ! to include)
-   !package*.json
-   !client/package*.json
-   !dist/
-   !client/dist/
-   !public/
+
+   # Ignore source TypeScript files, as we only need the compiled JS in dist/
+   src/
+   *.ts
+   # Keep tsconfig files, vite config, and client source files as they're needed for building
+   !tsconfig.json
+   !tsconfig.server.json
+   !client/tsconfig.json
+   !client/tsconfig.app.json
+   !client/tsconfig.node.json
+   !client/vite.config.ts
+   !client/src/**/*.ts
+   !client/src/**/*.tsx
+
+   # Ignore development/build tooling configuration
+   eslint.config.js
+   nodemon.json
+   browser-sync.config.cjs
+   .gitignore
+   .git
+   .vscode
+
+   # Ignore documentation and non-essential files
+   README.md
+   memory-bank/
    ```
+
+3. **Server Configuration for Client Files:**
+   When serving client files in production, use absolute paths in your server.ts file:
+   ```typescript
+   // --- Serve React App Static Files (Production Only) ---
+   if (process.env.NODE_ENV === 'production') {
+     // Use absolute path for client build
+     const clientBuildPath = '/app/client/dist';
+     console.log('Client build path:', clientBuildPath);
+     
+     app.use(express.static(clientBuildPath));
+
+     // --- Catch-all for Client-Side Routing (Production Only) ---
+     app.get('*', (_req: Request, res: Response): void => {
+       const indexPath = path.join(clientBuildPath, 'index.html');
+       console.log('Serving index from:', indexPath);
+       res.sendFile(indexPath);
+     });
+   }
+   ```
+   **IMPORTANT:** Using absolute paths that match your Docker container structure is critical for successful deployment.
 
 ## Phase 2: Application Deployment
 
@@ -234,7 +299,17 @@ gcloud auth list
    ```
    Then retry the command
 
-4. **Region Access Issues:**
+4. **Path Resolution Issues in Container:**
+   ```
+   Error: ENOENT: no such file or directory, stat '/client/dist/index.html'
+   ```
+   Solution:
+   - Use absolute paths in server.ts that match your Docker container structure
+   - Change from relative paths like `path.join(__dirname, '../../client/dist')` to absolute paths like `/app/client/dist`
+   - Add logging to debug path issues: `console.log('Client build path:', clientBuildPath)`
+   - Ensure the paths in your Dockerfile COPY commands match the paths in your server code
+
+5. **Region Access Issues:**
    If encountering region-specific errors, verify:
    - Region is properly specified in all commands
    - Region supports all required services
