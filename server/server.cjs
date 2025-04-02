@@ -7,6 +7,8 @@ const path = require('path');
 
 // Import the new audio split router
 const audioSplitRouter = require('./audio-split/routes.cjs'); // Add .cjs extension
+// Import the audio-to-text router
+const audioToTextRouter = require('./audio-to-text/routes.cjs');
 
 const app = express(); // Remove Express type hint
 // Cloud Run provides the port number via the PORT environment variable.
@@ -19,8 +21,13 @@ app.get('/health', (_req, res) => { // Remove Request, Response types
 });
 
 // --- API Routes ---
+// Enable JSON body parsing for API requests
+app.use(express.json()); // IMPORTANT: Add this before API routes that expect JSON bodies
+
 // Mount the audio split router
 app.use('/api/audio-split', audioSplitRouter);
+// Mount the audio-to-text router
+app.use('/api/audio-to-text', audioToTextRouter);
 // Add other API routers here before static file serving
 
 // Serve static files from the 'public' directory
