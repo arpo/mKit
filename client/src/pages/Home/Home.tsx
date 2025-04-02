@@ -37,13 +37,21 @@ function Home() {
   useEffect(() => {
     // Function to check status
     const checkStatus = async (id: string) => {
-      console.log(`Checking status for ID (from component): ${id}`);
+      console.log(`[Status Check] Attempting for ID: ${id}`);
       try {
-        const response = await fetch(`/api/audio-split/status/${id}`);
-        const result = await response.json();
-
+        const url = `/api/audio-split/status/${id}`;
+        console.log(`[Status Check] Fetching from: ${url}`);
+        const response = await fetch(url);
+        
         if (!response.ok) {
-          throw new Error(result.message || `HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(`[Status Check] Result:`, result);
+
+        if (!result) {
+          throw new Error('No result data received');
         }
 
         setPredictionStatus(result.status); // Update status in store
@@ -74,11 +82,25 @@ function Home() {
       }
     };
 
-    // Start polling if we have an ID and are not yet finished/failed
-    if (predictionId && predictionStatus !== 'succeeded' && predictionStatus !== 'failed' && predictionStatus !== 'canceled') {
-      // Check immediately first
-      checkStatus(predictionId);
-      // Then set interval
+    // Validate predictionId before starting polling
+    if (!predictionId) {
+      console.log('[Polling] No prediction ID available, skipping polling');
+      return;
+    }
+
+    // Don't poll if we're already in a final state
+    if (['succeeded', 'failed', 'canceled'].includes(predictionStatus || '')) {
+      console.log(`[Polling] Prediction in final state: ${predictionStatus}, skipping polling`);
+      return;
+    }
+
+    console.log(`[Polling] Starting for ID: ${predictionId}, current status: ${predictionStatus}`);
+    
+    // Check immediately first
+    checkStatus(predictionId);
+    
+    // Then set interval
+    if (!pollingIntervalRef.current) {
       pollingIntervalRef.current = setInterval(() => {
         checkStatus(predictionId!); // Use non-null assertion as we checked predictionId
       }, 3000) as unknown as number; // Poll every 3 seconds

@@ -42,19 +42,40 @@ async function startSplittingProcess(req) { // Removed Request type
   };
 
   try {
-    console.log(`Sending prediction request to Replicate (Version: ${spleeterVersion})...`);
+    console.log(`[Controller] Sending prediction request to Replicate (Version: ${spleeterVersion})...`);
+    console.log('[Controller] Input configuration:', { ...input, audio: '[DATA_URI_HIDDEN]' });
+
     // Use standard replicate instance
     const prediction = await replicate.predictions.create({
       version: spleeterVersion,
       input,
     });
 
-    console.log('Replicate prediction initiated:', prediction.id);
-    return prediction;
+    console.log('[Controller] Replicate response:', {
+      id: prediction.id,
+      status: prediction.status,
+      created_at: prediction.created_at,
+      model: prediction.version,
+    });
+
+    if (!prediction.id) {
+      console.error('[Controller] No prediction ID in response');
+      throw new Error('Invalid response from Replicate: missing prediction ID');
+    }
+
+    // Ensure we're returning the expected format
+    const response = {
+      id: prediction.id,
+      status: prediction.status || 'starting',
+      created_at: prediction.created_at
+    };
+
+    console.log('[Controller] Returning prediction:', response);
+    return response;
 
   } catch (error) {
-    console.error('Replicate API error:', error);
-    throw new Error('Failed to start audio splitting process with Replicate.');
+    console.error('[Controller] Replicate API error:', error);
+    throw new Error(`Failed to start audio splitting: ${error.message}`);
   }
 }
 
@@ -65,15 +86,38 @@ async function startSplittingProcess(req) { // Removed Request type
  * @throws If the Replicate API call fails.
  */
 async function getPredictionStatus(predictionId) {
-  console.log(`Fetching status for prediction ID: ${predictionId}...`);
+  console.log(`[Controller] Fetching status for prediction ID: ${predictionId}...`);
+  
+  if (!predictionId) {
+    console.error('[Controller] Invalid prediction ID received');
+    throw new Error('Invalid prediction ID');
+  }
+
   try {
+    console.log(`[Controller] Making API call to Replicate for ID: ${predictionId}`);
     const prediction = await replicate.predictions.get(predictionId);
-    console.log(`Status for ${predictionId}: ${prediction.status}`);
+    
+    console.log('[Controller] Received prediction:', {
+      id: prediction.id,
+      status: prediction.status,
+      created_at: prediction.created_at,
+      completed_at: prediction.completed_at,
+      // Log other relevant fields but avoid sensitive data
+    });
+
+    if (!prediction.status) {
+      console.error('[Controller] No status in prediction response');
+      throw new Error('Invalid prediction response from Replicate');
+    }
+
     return prediction;
   } catch (error) {
-    console.error(`Replicate API error getting status for ${predictionId}:`, error);
-    // Rethrow or handle specific error types (e.g., 404 Not Found)
-    throw new Error(`Failed to get prediction status from Replicate for ID: ${predictionId}`);
+    console.error(`[Controller] Replicate API error for ${predictionId}:`, error);
+    // Check for specific error types
+    if (error.response?.status === 404) {
+      throw new Error(`Prediction ${predictionId} not found`);
+    }
+    throw new Error(`Failed to get prediction status: ${error.message}`);
   }
 }
 

@@ -114,10 +114,18 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
         throw new Error(result.message || `HTTP error! status: ${response.status}`);
       }
 
-      console.log('Upload successful, prediction started:', result);
+      console.log('[Upload] Response:', result);
+      if (!result.id) {
+        throw new Error('No prediction ID received from server');
+      }
+      console.log('[Upload] Setting prediction ID:', result.id);
       // Only store ID and initial status. Keep loading true. Polling handled by component.
-      set({ predictionId: result.id, predictionStatus: result.status || 'starting', isLoading: true });
-      // REMOVED: get()._startPolling(result.id);
+      set({ 
+        predictionId: result.id, 
+        predictionStatus: result.status || 'starting', 
+        isLoading: true 
+      });
+      console.log('[Upload] Store updated with ID and status');
 
     } catch (error) {
       console.error('File upload failed:', error);
