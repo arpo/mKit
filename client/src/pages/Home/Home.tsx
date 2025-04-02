@@ -86,8 +86,8 @@ function Home() {
         )}
 
         {/* Display final results if available and not actively loading */}
-        {finalResult && !isLoading && (
-            <Box mt="md">
+        { finalResult && !isLoading && (
+            <Box mt="md" style={{display: 'none'}}>
               <Text fw={500} mb="xs">Splitting Complete:</Text>
               <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
                 {/* Add type check for finalResult before mapping */}
