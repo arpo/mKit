@@ -1,121 +1,29 @@
-import { useEffect, useRef } from 'react';
+// Removed useEffect and useRef, using logic from Script.ts now
 import { Button, LoadingOverlay, Text, Stack, Anchor, SimpleGrid } from '@mantine/core';
 import DropArea from '../../components/DropArea/DropArea';
-import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script';
+import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script'; // Still needed for droppedFiles check
+import { useHomeStore, HomeState } from './Script'; // Import the new store and state type
 
 function Home() {
-  // Select state individually
+  // Select state from the new HomeStore using individual selectors to avoid infinite loops
+  const isLoading = useHomeStore((state: HomeState) => state.isLoading);
+  const predictionId = useHomeStore((state: HomeState) => state.predictionId);
+  const predictionStatus = useHomeStore((state: HomeState) => state.predictionStatus);
+  const finalResult = useHomeStore((state: HomeState) => state.finalResult);
+  const error = useHomeStore((state: HomeState) => state.error);
+
+  // Select actions from the new HomeStore
+  const uploadAudioAndStartPolling = useHomeStore((state) => state.uploadAudioAndStartPolling);
+  const clearPrediction = useHomeStore((state) => state.clearPrediction);
+
+  // Still need droppedFiles from DropArea to conditionally render buttons
   const droppedFiles = useDropAreaStore((state: DropAreaState) => state.droppedFiles);
-  const isLoading = useDropAreaStore((state: DropAreaState) => state.isLoading);
-  const predictionId = useDropAreaStore((state: DropAreaState) => state.predictionId);
-  const predictionStatus = useDropAreaStore((state: DropAreaState) => state.predictionStatus);
-  const finalResult = useDropAreaStore((state: DropAreaState) => state.finalResult);
-  const error = useDropAreaStore((state: DropAreaState) => state.error);
 
-  // Select actions individually (they're stable)
-  const uploadAudio = useDropAreaStore((state) => state.uploadAudio);
-  const clearFiles = useDropAreaStore((state) => state.clearFiles);
-  const setIsLoading = useDropAreaStore((state) => state.setIsLoading);
-  const setPredictionStatus = useDropAreaStore((state) => state.setPredictionStatus);
-  const setFinalResult = useDropAreaStore((state) => state.setFinalResult);
-  const setError = useDropAreaStore((state) => state.setError);
+  // Button click handlers now call actions from HomeStore
+  const handleStartClick = () => uploadAudioAndStartPolling();
+  const handleClearClick = () => clearPrediction();
 
-  // Ref to store interval ID
-  const pollingIntervalRef = useRef<number | null>(null);
-
-  // Button click handlers
-  const handleStartClick = () => uploadAudio(); // This action now sets predictionId in the store
-  const handleClearClick = () => {
-    clearFiles(); // This action clears state in the store
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current); // Also clear interval ref if clearing manually
-      pollingIntervalRef.current = null;
-    }
-  };
-
-  // useEffect for polling based on predictionId
-  useEffect(() => {
-    // Function to check status
-    const checkStatus = async (id: string) => {
-      console.log(`[Status Check] Attempting for ID: ${id}`);
-      try {
-        const url = `/api/audio-split/status/${id}`;
-        console.log(`[Status Check] Fetching from: ${url}`);
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log(`[Status Check] Result:`, result);
-
-        if (!result) {
-          throw new Error('No result data received');
-        }
-
-        setPredictionStatus(result.status); // Update status in store
-
-        if (result.status === 'succeeded') {
-          console.log('Prediction succeeded (from component):', result);
-          setFinalResult(result.output); // Update final result in store
-          setIsLoading(false); // Set loading false in store
-          if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); // Stop polling
-          pollingIntervalRef.current = null;
-        } else if (result.status === 'failed' || result.status === 'canceled') {
-          console.error('Prediction failed/canceled (from component):', result);
-          setError(result.error || `Prediction ${result.status}.`); // Update error in store
-          setIsLoading(false); // Set loading false in store
-          if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); // Stop polling
-          pollingIntervalRef.current = null;
-        } else {
-          // Still processing, ensure loading is true
-          if (!isLoading) setIsLoading(true);
-        }
-      } catch (error) {
-        console.error('Status check fetch failed:', error);
-        const errorMessage = error instanceof Error ? error.message : 'An unknown status check error occurred.';
-        setError(`Status check failed: ${errorMessage}`); // Update error in store
-        setIsLoading(false); // Set loading false in store
-        if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current); // Stop polling
-        pollingIntervalRef.current = null;
-      }
-    };
-
-    // Validate predictionId before starting polling
-    if (!predictionId) {
-      console.log('[Polling] No prediction ID available, skipping polling');
-      return;
-    }
-
-    // Don't poll if we're already in a final state
-    if (['succeeded', 'failed', 'canceled'].includes(predictionStatus || '')) {
-      console.log(`[Polling] Prediction in final state: ${predictionStatus}, skipping polling`);
-      return;
-    }
-
-    console.log(`[Polling] Starting for ID: ${predictionId}, current status: ${predictionStatus}`);
-    
-    // Check immediately first
-    checkStatus(predictionId);
-    
-    // Then set interval
-    if (!pollingIntervalRef.current) {
-      pollingIntervalRef.current = setInterval(() => {
-        checkStatus(predictionId!); // Use non-null assertion as we checked predictionId
-      }, 3000) as unknown as number; // Poll every 3 seconds
-      console.log(`Polling started with interval ID: ${pollingIntervalRef.current}`);
-    }
-
-    // Cleanup function: clear interval when predictionId changes or component unmounts
-    return () => {
-      if (pollingIntervalRef.current) {
-        console.log(`Clearing interval ID: ${pollingIntervalRef.current}`);
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    };
-  }, [predictionId, predictionStatus, isLoading]); // Only depend on values needed for polling logic
+  // Removed useEffect and polling logic - it's handled in Script.ts now
 
   return (
     <div>
@@ -126,24 +34,32 @@ function Home() {
         <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
         <DropArea />
         <Stack mt="md" gap="sm">
-          {/* Conditionally render the Start/Clear button */}
-          {droppedFiles.length > 0 && !finalResult && (
+          {/* Conditionally render the Start/Clear button using HomeStore state */}
+          {/* Show Start if files are dropped AND there's no final result yet */}
+          {droppedFiles.length > 0 && !finalResult && !predictionId && (
             <Button onClick={handleStartClick} loading={isLoading} disabled={isLoading}>
-              {isLoading ? `Status: ${predictionStatus || 'uploading'}...` : 'Start Splitting'}
+              {/* Display more specific loading status based on HomeStore */}
+              {isLoading && predictionStatus ? `Status: ${predictionStatus}...` : isLoading ? 'Uploading...' : 'Start Splitting'}
             </Button>
           )}
-          {(droppedFiles.length > 0 || predictionId) && !isLoading && (
-             <Button onClick={handleClearClick} variant="outline" color="gray">
-               Clear
-             </Button>
+          {/* Show Clear if files are dropped OR a prediction is in progress/finished, AND not currently loading the initial upload */}
+          {(droppedFiles.length > 0 || predictionId) && (
+            <Button onClick={handleClearClick} variant="outline" color="gray" disabled={isLoading && !predictionId /* Disable clear during initial upload? */}>
+              Clear
+            </Button>
           )}
 
-          {/* Display Status/Error */}
-          {predictionStatus && predictionStatus !== 'succeeded' && !error && !isLoading && (
+          {/* Display Status/Error from HomeStore */}
+          {/* Show status text only when actively processing and not yet succeeded/failed */}
+          {isLoading && predictionStatus && predictionStatus !== 'succeeded' && !error && (
             <Text size="sm">Status: {predictionStatus} (ID: {predictionId})</Text>
           )}
+           {/* Show final status if not loading and prediction exists */}
+           {!isLoading && predictionStatus && predictionStatus !== 'succeeded' && predictionId && !error &&(
+             <Text size="sm">Status: {predictionStatus} (ID: {predictionId})</Text>
+           )}
           {error && (
-            <Text c="red" size="sm">Error: {error}</Text>
+            <Text c="red" size="sm">Error: {error} {predictionId ? `(ID: ${predictionId})` : ''}</Text>
           )}
 
           {/* Display final results if available */}
