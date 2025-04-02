@@ -269,14 +269,20 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       console.log("[Transcription] Success:", result);
 
       // Extract the text - This might need adjustment based on Fal AI's actual response structure
-      // Example assumes Fal returns { text: "..." } or similar inside the `data` property from the subscribe result
-      const transcribedText = result?.text || (typeof result === 'string' ? result : JSON.stringify(result)); // Flexible fallback
+      // Extract the text based on the feedback structure: { transcription: { text: "..." } }
+      const transcribedText = result?.transcription?.text;
 
-      set({
-        isTranscribing: false,
-        transcriptionResult: transcribedText,
-        transcriptionError: null,
-      });
+      if (typeof transcribedText === 'string') {
+        set({
+          isTranscribing: false,
+          transcriptionResult: transcribedText,
+          transcriptionError: null,
+        });
+      } else {
+        // Handle cases where the expected structure is missing
+        console.error("[Transcription] Unexpected result structure:", result);
+        throw new Error("Received transcription result in an unexpected format.");
+      }
 
     } catch (error) {
       console.error("[Transcription] Failed:", error);
