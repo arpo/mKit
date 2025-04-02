@@ -34,7 +34,7 @@ This command will:
 - `npm run build` - Build both server and client for production
 - `npm run start` - Start the production server (after building)
 - `npm run format` - Format code using Prettier
-- `npm run deploy` - Builds the project (server and client). Deployment requires manual `gcloud` commands afterwards.
+- `npm run deploy` - Deploy to Google Cloud Run (builds, submits to Cloud Build, and deploys to Cloud Run)
 
 ## Project Structure
 ```
@@ -55,30 +55,52 @@ This command will:
 
 ## Deployment to Google Cloud Run
 
+### Option 1: Using Cline (Recommended as of April 2025)
 
+The easiest way to deploy is using Cline (Note: Use Sonnet, as Google Gemini doesn't run commands for you). Send this prompt to Cline:
 
-**Initial One-Time Setup:**
-If you are setting up this project in a *new* Google Cloud environment for the first time, follow the steps outlined in `GCP-INITIAL-SETUP-GUIDE.md`. This guide covers enabling APIs, creating service accounts, setting up Artifact Registry, and granting permissions.
+```
+Setting up this project on GCP. 
 
-**Regular Deployment Prerequisites:**
+Here's my new project:
+Project number: <your-project-number>
+Project ID: <your-project-id>
 
-*   Ensure you have the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed (`gcloud` CLI).
-*   Authenticate the `gcloud` CLI with your user account:
-    ```bash
-    gcloud auth login
-    ```
-*   Ensure your GCP project has the following APIs enabled: Cloud Build API (`cloudbuild.googleapis.com`), Artifact Registry API (`artifactregistry.googleapis.com`), and Cloud Run API (`run.googleapis.com`).
-*   Ensure you have an Artifact Registry Docker repository configured in your project (the `gcloud builds submit` command implicitly pushes to `gcr.io/[PROJECT_ID]/[IMAGE_NAME]`, but using Artifact Registry e.g., `[REGION]-docker.pkg.dev/[PROJECT_ID]/[REPO]/[IMAGE]` is recommended). The build command might need adjustment if using Artifact Registry.
+Here's a guide you created to me on how to do it:
+DEPLOY-FROM-SCRATCH-GUIDE.md
 
-**Usage:**
+I want you to help me get this project up and running on GCP. Read the guide and help me through.
+```
 
-After completing the **Initial One-Time Setup** described in `DEPLOY-FROM-SCRATCH-GUIDE.md` (or if the environment is already set up), follow these steps for deployment:
+Cline will guide you through the entire process, handling all the necessary GCP setup and deployment steps.
 
-1.  **Build the Project:**
-    Run the `deploy` script, which now only performs the build step:
-    ```bash
-    npm run deploy
-    ```
+### Option 2: Manual Setup and Deployment
 
-2.  **Push Image & Deploy Service:**
-    Manually execute the necessary `gcloud` commands in your terminal to push the Docker image via Cloud Build and deploy it to Cloud Run. Refer to **Phase 2** of the `DEPLOY-FROM-SCRATCH-GUIDE.md` for the specific `gcloud builds submit` and `gcloud run deploy` commands and instructions. You will need the GCP resource names (Project ID, Region, Repository Name, Image Name, Service Name, Service Account Emails) identified or chosen during the initial setup phase.
+If you prefer to handle the deployment manually:
+
+1. **First-Time Setup:**
+   If this is your first time deploying the project, follow the complete setup guide in `DEPLOY-FROM-SCRATCH-GUIDE.md`. This includes:
+   - Enabling required GCP APIs
+   - Creating an Artifact Registry repository
+   - Setting up service accounts and permissions
+   - Configuring your local environment
+
+2. **Regular Deployment:**
+   After the initial setup is complete, you can deploy using:
+   ```bash
+   npm run deploy
+   ```
+   This command:
+   - Builds the application (server + client)
+   - Submits the build to Cloud Build
+   - Deploys the service to Cloud Run
+
+## GCP Resources
+
+The project uses the following GCP resources (configured during initial setup):
+- Cloud Run for serverless hosting
+- Cloud Build for building Docker images
+- Artifact Registry for storing Docker images
+- IAM & Service Accounts for security and access control
+
+For detailed information about the GCP setup and deployment process, refer to `DEPLOY-FROM-SCRATCH-GUIDE.md`.

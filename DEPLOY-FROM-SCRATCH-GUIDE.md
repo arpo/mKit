@@ -191,6 +191,20 @@ gcloud auth list
         ```
     *   *(Optional: Re-authenticate as your user: `gcloud auth login`)*
 
+5.  **Automating Deployment (Recommended):**
+    After confirming the manual deployment works, automate the process by adding a deploy script to your `package.json`:
+    ```json
+    {
+      "scripts": {
+        "deploy": "npm run build && gcloud builds submit --tag [REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:latest . && gcloud run deploy [SERVICE_NAME] --image=[REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:latest --region=[REGION] --platform=managed --service-account=[RUNTIME_SA_EMAIL] --allow-unauthenticated --project=[YOUR_PROJECT_ID]"
+      }
+    }
+    ```
+    Now you can deploy with a single command:
+    ```bash
+    npm run deploy
+    ```
+
 ## Troubleshooting
 
 ### Common Issues and Solutions:
