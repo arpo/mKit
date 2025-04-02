@@ -72,11 +72,7 @@ If you are setting up this project in a *new* Google Cloud environment for the f
 
 **Usage:**
 
-**Usage:**
-
-**Usage:**
-
-After completing the **Initial One-Time Setup** described in `GCP-INITIAL-SETUP-GUIDE.md`, follow these steps for deployment:
+After completing the **Initial One-Time Setup** described in `DEPLOY-FROM-SCRATCH-GUIDE.md` (or if the environment is already set up), follow these steps for deployment:
 
 1.  **Build the Project:**
     Run the `deploy` script, which now only performs the build step:
@@ -84,24 +80,5 @@ After completing the **Initial One-Time Setup** described in `GCP-INITIAL-SETUP-
     npm run deploy
     ```
 
-2.  **Build & Push Docker Image via Cloud Build:**
-    Manually run the following `gcloud` command in your terminal (ensure your `gcloud` CLI is authenticated with sufficient permissions):
-    ```bash
-    # Replace placeholders if needed, but these were the last used values:
-    # Region: us-central1
-    # Project ID: sage-extension-455512-s0
-    # Repo Name: mkit-repo
-    # Image Name: mkit
-    gcloud builds submit --tag us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest . --project=sage-extension-455512-s0
-    ```
-
-3.  **Deploy to Cloud Run:**
-    Manually run the following `gcloud` command in your terminal:
-    ```bash
-    # Replace placeholders if needed, but these were the last used values:
-    # Service Name: mkit
-    # Region: us-central1
-    # Project ID: sage-extension-455512-s0
-    # Runtime SA: mkit-deployer@sage-extension-455512-s0.iam.gserviceaccount.com
-    gcloud run deploy mkit --image=us-central1-docker.pkg.dev/sage-extension-455512-s0/mkit-repo/mkit:latest --region=us-central1 --platform=managed --service-account=mkit-deployer@sage-extension-455512-s0.iam.gserviceaccount.com --allow-unauthenticated --project=sage-extension-455512-s0
-    ```
+2.  **Push Image & Deploy Service:**
+    Manually execute the necessary `gcloud` commands in your terminal to push the Docker image via Cloud Build and deploy it to Cloud Run. Refer to **Phase 2** of the `DEPLOY-FROM-SCRATCH-GUIDE.md` for the specific `gcloud builds submit` and `gcloud run deploy` commands and instructions. You will need the GCP resource names (Project ID, Region, Repository Name, Image Name, Service Name, Service Account Emails) identified or chosen during the initial setup phase.

@@ -21,10 +21,9 @@
     -   Updated `Counter.tsx` to call `initCounter()` and remove direct logic.
 -   Updated Memory Bank (`systemPatterns.md`, `techContext.md`) and created `.clinerules` to reflect the established patterns.
 -   Fixed TypeScript errors in `About.tsx` and `Home.tsx` (unused React imports) identified during `npm run build`.
--   Removed the root `lint` script from `package.json` as build includes type checking and the script was causing environment issues.
--   Replaced the interactive setup script (`scripts/deploy-to-cloud-run.mjs`) with a documentation file (`GCP-INITIAL-SETUP-GUIDE.md`) preserving the original script code for reference.
--   Simplified the `deploy` script in `package.json` to only run `npm run build`.
--   Updated `README.md` to document the manual `gcloud builds submit` and `gcloud run deploy` commands required after running `npm run deploy`.
+-   Removed the root `lint` script from `package.json` as build includes type checking.
+-   Set `deploy` script in `package.json` to only run `npm run build`.
+-   *(Deployment process refined to use manual `gcloud` commands after build - see `README.md` and `DEPLOY-FROM-SCRATCH-GUIDE.md`)*
 
 ## Next Steps
 
