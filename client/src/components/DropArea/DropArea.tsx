@@ -9,6 +9,7 @@ function DropArea(props: Partial<DropzoneProps>) {
   const theme = useMantineTheme();
   // Get state and actions from the Zustand store
   const isDraggingOverWindow = useDropAreaStore((state: DropAreaState) => state.isDraggingOverWindow);
+  const droppedFiles = useDropAreaStore((state: DropAreaState) => state.droppedFiles); // Get dropped files state
   const { setDragging, handleFileDrop, handleFileReject } = useDropAreaStore.getState();
 
   // Window event listeners updated to use store action
@@ -49,38 +50,55 @@ function DropArea(props: Partial<DropzoneProps>) {
         alignItems: 'center',
         border: isDraggingOverWindow ? `2px dashed ${theme.colors.blue[6]}` : `1px solid ${theme.colors.gray[7]}`, // Conditional dashed border, default solid border
         borderRadius: theme.radius.sm, // Add some rounding
-        transition: 'border-color 0.1s ease-in-out', // Smooth transition for color change
+        transition: 'border-color 0.1s ease-in-out, height 0.3s ease-in-out, min-height 0.3s ease-in-out', // Smooth transitions for border and height
+        overflow: 'hidden', // Prevent content spill during transition
       }}
     >
-      <Group justify="center" gap="xl" style={{ pointerEvents: 'none' }}>
-        <Dropzone.Accept>
-          <IconUpload
-            style={{ width: rem(52), height: rem(52), color: String(theme.colors.blue[6]) }} // Explicitly cast
-            stroke={1.5}
-          />
-        </Dropzone.Accept>
-        <Dropzone.Reject>
-          <IconX
-            style={{ width: rem(52), height: rem(52), color: String(theme.colors.red[6]) }} // Explicitly cast
-            stroke={1.5}
-          />
-        </Dropzone.Reject>
-        <Dropzone.Idle>
+      {/* Conditionally render content based on whether files are dropped */}
+      {droppedFiles.length > 0 ? (
+        <div style={{ textAlign: 'center', padding: rem(10) }}>
+          {/* Use style prop for sizing, consistent with other icons */}
           <IconFileMusic
-            style={{ width: rem(52), height: rem(52), color: String(theme.colors.dimmed) }} // Explicitly cast
+            style={{ width: rem(52), height: rem(52), color: String(theme.colors.dimmed) }}
             stroke={1.5}
           />
-        </Dropzone.Idle>
-
-        <div>
-          <Text size="xl" inline>
-            Drag audio files here or click to select files
+          <Text size="lg" mt="sm">File(s) dropped:</Text>
+          <Text size="sm" c="dimmed">
+            {droppedFiles.map(file => file.name).join(', ')}
           </Text>
-          <Text size="sm" c="dimmed" inline mt={7}>
-            Attach audio files, max 100MB per file
-          </Text>
+          {/* Optionally add a button/icon here to clear the files */}
         </div>
-      </Group>
+      ) : (
+        <Group justify="center" gap="xl" style={{ pointerEvents: 'none' }}>
+          <Dropzone.Accept>
+            <IconUpload
+              style={{ width: rem(52), height: rem(52), color: String(theme.colors.blue[6]) }} // Explicitly cast
+              stroke={1.5}
+            />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX
+              style={{ width: rem(52), height: rem(52), color: String(theme.colors.red[6]) }} // Explicitly cast
+              stroke={1.5}
+            />
+          </Dropzone.Reject>
+          <Dropzone.Idle>
+            <IconFileMusic
+              style={{ width: rem(52), height: rem(52), color: String(theme.colors.dimmed) }} // Explicitly cast
+              stroke={1.5}
+            />
+          </Dropzone.Idle>
+
+          <div>
+            <Text size="xl" inline>
+              Drag audio files here or click to select files
+            </Text>
+            <Text size="sm" c="dimmed" inline mt={7}>
+              Attach audio files, max 100MB per file
+            </Text>
+          </div>
+        </Group>
+      )}
     </Dropzone>
   );
 }

@@ -3,8 +3,7 @@ import { create } from 'zustand';
 // Define the state shape for the DropArea component
 export interface DropAreaState {
   isDraggingOverWindow: boolean;
-  // Example state: Store dropped files?
-  // droppedFiles: File[];
+  droppedFiles: File[]; // State to hold dropped files
   // isLoading: boolean;
 }
 
@@ -22,10 +21,10 @@ export interface DropAreaActions {
 // Combine state and actions
 type FullDropAreaState = DropAreaState & DropAreaActions;
 
-export const useDropAreaStore = create<FullDropAreaState>((set) => ({
+export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({ // Add get to access state in actions
   // Initial state
   isDraggingOverWindow: false,
-  // droppedFiles: [],
+  droppedFiles: [], // Initialize as empty array
   // isLoading: false,
 
   // Define actions implementations
@@ -33,9 +32,10 @@ export const useDropAreaStore = create<FullDropAreaState>((set) => ({
 
   handleFileDrop: (files) => {
     console.log('Accepted files (from Script.ts):', files);
-    set({ isDraggingOverWindow: false }); // Reset drag state on drop
-    // Add logic to store files in state if needed:
-    // set({ droppedFiles: files, isDraggingOverWindow: false });
+    set({
+      droppedFiles: files, // Store the dropped files
+      isDraggingOverWindow: false // Reset drag state on drop
+    });
   },
 
   handleFileReject: (rejections) => {
