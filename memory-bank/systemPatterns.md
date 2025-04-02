@@ -52,3 +52,11 @@ Components and Pages generally follow this structure to enforce separation of co
     ```
 -   This pattern keeps side effects and setup logic contained within `Script.ts`, making the `.tsx` file cleaner and focused on rendering.
 -   `useEffect` should only be considered as a last resort for specific scenarios involving synchronization with *external*, non-React systems or libraries that explicitly require it.
+
+## Deployment Pattern (GCP)
+
+-   **Containerization:** The application (Node.js backend + built React frontend) is packaged into a Docker image using the `Dockerfile` in the root directory.
+-   **Image Registry:** Docker images are stored in Google Artifact Registry (`mkit-docker-repo` in `us-central1`).
+-   **Build Process:** Google Cloud Build is used to build the Docker image from the source code and push it to Artifact Registry (`gcloud builds submit`).
+-   **Hosting:** The containerized application is deployed and hosted on Google Cloud Run (`mkit-service` in `us-central1`) as a managed, serverless service (`gcloud run deploy`).
+-   **Automation:** The entire build and deployment process is automated via the `npm run deploy` script in the root `package.json`.

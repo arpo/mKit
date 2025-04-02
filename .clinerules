@@ -33,3 +33,17 @@ This file documents key patterns, preferences, and project intelligence learned 
 *   **Development Server (CRITICAL):** **DO NOT use 
 `npm run dev` or `npm run dev:client`
 The system is running already!!!!
+*   **Deployment (GCP):** Prefer using Cline (Sonnet model) for initial GCP setup and deployment. Use the following prompt structure:
+    ```
+    Setting up this project on GCP. 
+
+    Here's my new project:
+    Project number: <your-project-number>
+    Project ID: <your-project-id>
+
+    Here's a guide you created to me on how to do it:
+    DEPLOY-FROM-SCRATCH-GUIDE.md
+
+    I want you to help me get this project up and running on GCP. Read the guide and help me through.
+    ```
+    For subsequent deployments, `npm run deploy` can be used.

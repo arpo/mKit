@@ -1,4 +1,4 @@
-# Active Context: mKit (2025-04-01)
+# Active Context: mKit (2025-04-02)
 
 ## Current Focus
 
@@ -22,8 +22,11 @@
 -   Updated Memory Bank (`systemPatterns.md`, `techContext.md`) and created `.clinerules` to reflect the established patterns.
 -   Fixed TypeScript errors in `About.tsx` and `Home.tsx` (unused React imports) identified during `npm run build`.
 -   Removed the root `lint` script from `package.json` as build includes type checking.
--   Set `deploy` script in `package.json` to only run `npm run build`.
--   *(Deployment process refined to use manual `gcloud` commands after build - see `README.md` and `DEPLOY-FROM-SCRATCH-GUIDE.md`)*
+-   Completed initial GCP deployment setup (Cloud Run, Cloud Build, Artifact Registry, Service Accounts, IAM roles for project `mkit-001`).
+-   Created `DEPLOY-FROM-SCRATCH-GUIDE.md` for initial GCP setup.
+-   Created automated `npm run deploy` script in root `package.json` combining build, image push, and Cloud Run deployment steps.
+-   Updated `DEPLOY-FROM-SCRATCH-GUIDE.md` to include the automated script setup and details.
+-   Updated `README.md` with deployment instructions (Cline method and `npm run deploy`).
 
 ## Next Steps
 

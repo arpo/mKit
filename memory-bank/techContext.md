@@ -27,4 +27,10 @@
 -   **`useEffect` Avoidance:** See `systemPatterns.md` for the pattern using exported functions from `Script.ts`.
 -   **Type Checking:** TypeScript (via `npm run build`)
 -   **Formatting:** Prettier (`npm run format`)
--   **Deployment:** Uses Docker (`Dockerfile`) for containerization. Manual deployment process involves building locally (`npm run build` or `npm run deploy`) followed by manual `gcloud` commands (builds submit, run deploy). See `DEPLOY-FROM-SCRATCH-GUIDE.md` for detailed setup and deployment steps.
+-   **Deployment (GCP):**
+    -   **Hosting:** Google Cloud Run (`mkit-service` in `us-central1`).
+    -   **Containerization:** Docker (`Dockerfile`).
+    -   **Build:** Google Cloud Build triggered via `gcloud builds submit`.
+    -   **Image Registry:** Google Artifact Registry (`mkit-docker-repo` in `us-central1`).
+    -   **Automation:** Automated build and deployment via `npm run deploy` script in root `package.json`.
+    -   **Setup/Details:** See `DEPLOY-FROM-SCRATCH-GUIDE.md` and `README.md` (Deployment section).

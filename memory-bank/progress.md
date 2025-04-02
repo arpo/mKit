@@ -1,4 +1,4 @@
-# Progress: mKit (2025-04-01)
+# Progress: mKit (2025-04-02)
 
 ## What Works
 
@@ -13,6 +13,8 @@
 -   **Build/Dev Scripts:** Root `package.json` updated for client/server development and builds.
 -   **Server Integration:** Vite proxy and production static serving configured.
 -   **Initial Documentation:** Memory Bank core files created/updated. `.clinerules` created.
+-   **GCP Deployment Setup:** Initial configuration complete (Cloud Run, Cloud Build, Artifact Registry, Service Accounts, IAM roles for `mkit-001`). Application deployed successfully.
+-   **Deployment Automation:** `npm run deploy` script created in root `package.json` for automated build and deployment to GCP.
 
 ## What's Left to Build
 
