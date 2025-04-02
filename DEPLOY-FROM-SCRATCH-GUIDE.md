@@ -1,6 +1,6 @@
-# Guide: Deploying mKit to GCP From Scratch
+# Guide: Deploying Node.js Applications to GCP From Scratch
 
-**Purpose:** This guide outlines the complete process for deploying the mKit application to Google Cloud Platform (GCP), starting from a state where **no specific GCP resources** (Cloud Run service, Artifact Registry repository, Service Accounts) exist for this project, and local configuration (Memory Bank, service account keys) needs to be recreated.
+**Purpose:** This guide outlines the complete process for deploying a Node.js application to Google Cloud Platform (GCP), starting from a state where **no specific GCP resources** (Cloud Run service, Artifact Registry repository, Service Accounts) exist for this project, and local configuration needs to be recreated.
 
 **Workflow:** The process involves manual setup of GCP resources using the `gcloud` CLI, followed by manual build and deployment steps.
 
@@ -42,22 +42,22 @@
 4.  **Create Artifact Registry Repository:**
     *(Run authenticated as your user account)*
     *   Choose a `[REGION]` (e.g., `us-central1`).
-    *   Choose a `[REPOSITORY_NAME]` (e.g., `mkit-repo`).
+    *   Choose a `[REPOSITORY_NAME]` for your Docker images.
     ```bash
     gcloud artifacts repositories create [REPOSITORY_NAME] \
         --repository-format=docker \
         --location=[REGION] \
-        --description="Docker images for mKit" \
+        --description="Docker images for application" \
         --project=[YOUR_PROJECT_ID]
     ```
 
 5.  **Create Service Accounts & Grant Roles:**
     *(Run authenticated as your user account)*
     *   **A. Create Deployer Service Account:** This account performs build/deploy.
-        *   Choose a `[DEPLOYER_SA_NAME]` (e.g., `mkit-deployer`).
+        *   Choose a `[DEPLOYER_SA_NAME]` (e.g., `app-deployer`).
         ```bash
         gcloud iam service-accounts create [DEPLOYER_SA_NAME] \
-            --display-name="mKit Deployment Service Account" \
+            --display-name="Deployment Service Account" \
             --project=[YOUR_PROJECT_ID]
         ```
         *   Note the generated email: `[DEPLOYER_SA_EMAIL]` (format: `[DEPLOYER_SA_NAME]@[YOUR_PROJECT_ID].iam.gserviceaccount.com`).
@@ -67,6 +67,9 @@
             gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] --member="serviceAccount:[DEPLOYER_SA_EMAIL]" --role="roles/run.admin"
             gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] --member="serviceAccount:[DEPLOYER_SA_EMAIL]" --role="roles/artifactregistry.writer"
             gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] --member="serviceAccount:[DEPLOYER_SA_EMAIL]" --role="roles/iam.serviceAccountUser"
+            # Additional required roles for successful deployment
+            gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] --member="serviceAccount:[DEPLOYER_SA_EMAIL]" --role="roles/serviceusage.serviceUsageConsumer"
+            gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] --member="serviceAccount:[DEPLOYER_SA_EMAIL]" --role="roles/storage.admin"
             ```
         *   Create and download its key file (store securely, add to `.gitignore`!):
             ```bash
@@ -87,13 +90,67 @@
         ```
     *(Allow a few minutes for IAM changes to propagate).*
 
-    **Important:** Keep track of the chosen/identified values: `[YOUR_PROJECT_ID]`, `[REGION]`, `[REPOSITORY_NAME]`, `[DEPLOYER_SA_EMAIL]`, `[KEY_FILE_NAME].json`, `[RUNTIME_SA_EMAIL]`. Also decide on an `[IMAGE_NAME]` (e.g., `mkit-image`) and `[SERVICE_NAME]` (e.g., `mkit-service`) for the next phase.
+    **Important:** Keep track of the chosen/identified values: `[YOUR_PROJECT_ID]`, `[REGION]`, `[REPOSITORY_NAME]`, `[DEPLOYER_SA_EMAIL]`, `[KEY_FILE_NAME].json`, `[RUNTIME_SA_EMAIL]`. Also decide on an `[IMAGE_NAME]` and `[SERVICE_NAME]` for the next phase.
 
----
+## Docker Configuration
+
+1. **Dockerfile Structure:**
+   Ensure your Dockerfile properly handles both server and client builds:
+   ```dockerfile
+   # Copy package files for both server and client
+   COPY package*.json ./
+   COPY client/package*.json ./client/
+
+   # Install dependencies for both
+   RUN npm ci --only=production
+   RUN cd client && npm ci --only=production && cd ..
+
+   # Copy built files
+   COPY dist/ ./dist/
+   COPY client/dist/ ./client/dist/
+   COPY public/ ./public/
+   ```
+
+2. **Required .dockerignore Configuration:**
+   ```
+   # Ignore development files
+   node_modules
+   npm-debug.log
+   
+   # Keep these files (add ! to include)
+   !package*.json
+   !client/package*.json
+   !dist/
+   !client/dist/
+   !public/
+   ```
 
 ## Phase 2: Application Deployment
 
 **(Perform these steps manually in your terminal from the project root directory)**
+
+### Authentication Flow:
+
+Throughout the deployment process, you'll need to switch between your user account and the service account:
+
+1. **User Account Authentication** (for resource creation/IAM changes):
+   ```bash
+   gcloud auth login
+   ```
+   Use when: Creating resources, modifying IAM policies, or viewing logs
+
+2. **Service Account Authentication** (for deployment):
+   ```bash
+   gcloud auth activate-service-account --key-file=./[KEY_FILE_NAME].json
+   ```
+   Use when: Building/pushing images, deploying to Cloud Run
+
+Note: Always verify which account you're using with:
+```bash
+gcloud auth list
+```
+
+### Deployment Steps:
 
 1.  **Install Dependencies (if needed):**
     ```bash
@@ -102,11 +159,10 @@
     ```
 
 2.  **Build the Application:**
-    *   Use the simplified `npm` script (which only runs the build):
+    *   Use your build script:
         ```bash
-        npm run deploy
+        npm run build
         ```
-    *   *(Alternatively, run `npm run build` directly).*
 
 3.  **Build & Push Docker Image:**
     *   Authenticate as the Deployer Service Account using its key file:
@@ -135,19 +191,63 @@
         ```
     *   *(Optional: Re-authenticate as your user: `gcloud auth login`)*
 
+## Troubleshooting
+
+### Common Issues and Solutions:
+
+1. **Cloud Build Permission Errors:**
+   ```
+   ERROR: (gcloud.builds.submit) The user is forbidden from accessing the bucket
+   ```
+   Solution: Ensure the deployer service account has both `serviceusage.serviceUsageConsumer` and `storage.admin` roles.
+
+2. **Package Files Not Found During Build:**
+   ```
+   COPY failed: no source files were specified
+   ```
+   Solution: 
+   - Check .dockerignore isn't excluding package*.json files
+   - Verify correct COPY commands in Dockerfile
+   - Ensure you're in the correct directory when running build
+
+3. **Service Account Authentication Issues:**
+   ```
+   ERROR: (gcloud.projects.add-iam-policy-binding) PERMISSION_DENIED
+   ```
+   Solution: Switch back to user account:
+   ```bash
+   gcloud auth login
+   ```
+   Then retry the command
+
+4. **Region Access Issues:**
+   If encountering region-specific errors, verify:
+   - Region is properly specified in all commands
+   - Region supports all required services
+   - Default region is us-central1 for best compatibility
+
 ---
 
-## Phase 3: Post-Deployment (For Cline)
-
-**(Instructions for Cline after a successful deployment from scratch)**
+## Phase 3: Post-Deployment
 
 1.  **Confirm Success:** Verify the deployment was successful and the application is accessible at the provided Cloud Run URL.
-2.  **Initialize Memory Bank:** Since the Memory Bank was deleted, recreate the core files based on the current project state and the deployment details:
-    *   `projectbrief.md`: Define core objective and requirements.
-    *   `productContext.md`: Explain the purpose.
-    *   `systemPatterns.md`: Document backend/frontend structure, component patterns.
-    *   `techContext.md`: List technologies, update deployment section with the manual process and key GCP resource names used (Project ID, Region, Repo, Image, Service Name, Service Accounts).
-    *   `progress.md`: Describe current status (deployed), known issues (none expected initially), next steps.
-    *   `activeContext.md`: Set current focus, record the successful deployment from scratch as the most recent change.
-3.  **Initialize `.clinerules`:** Recreate the `.clinerules` file based on established project patterns (component structure, `useEffect` avoidance, etc.).
-4.  **Store Key Values:** Ensure the critical GCP resource names (`PROJECT_ID`, `REGION`, `REPOSITORY_NAME`, `IMAGE_NAME`, `SERVICE_NAME`, `DEPLOYER_SA_EMAIL`, `RUNTIME_SA_EMAIL`, `KEY_FILE_NAME`.json) used during setup are clearly documented, ideally in `memory-bank/techContext.md`.
+
+2.  **Document Deployment Information:**
+    Store the following information in your project documentation:
+    * Project ID
+    * Region
+    * Repository name
+    * Image name
+    * Service name
+    * Service account details
+    * Any environment-specific configurations
+
+3.  **Store Key Values:** Keep track of all critical GCP resource names used during setup:
+    * `PROJECT_ID`
+    * `REGION`
+    * `REPOSITORY_NAME`
+    * `IMAGE_NAME`
+    * `SERVICE_NAME`
+    * `DEPLOYER_SA_EMAIL`
+    * `RUNTIME_SA_EMAIL`
+    * `KEY_FILE_NAME.json`
