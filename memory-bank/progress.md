@@ -1,4 +1,4 @@
-# Progress: mKit (2025-04-02 1:00 PM)
+# Progress: mKit (2025-04-02 1:55 PM)
 
 ## What Works
 
@@ -20,9 +20,17 @@
     -   Server path issue fixed (`server.ts` uses absolute path `/app/client/dist`).
     -   Application deployed successfully to Cloud Run.
 -   **Deployment Automation:** `npm run deploy` script updated in root `package.json` with correct project details; successfully tested for automated build and deployment to GCP.
+-   **`DropArea` Component (`client/src/components/DropArea/`):**
+    -   Created component files (`.tsx`, `Script.ts`, `.css`) following project structure.
+    -   Integrated Mantine `Dropzone` for audio files (up to 100MB).
+    -   Added drag-over border effect and height transition.
+    -   Displays dropped file names.
+    -   State logic (`isDraggingOverWindow`, `droppedFiles`) moved to `Script.ts` (Zustand).
+    -   Static styles moved to `.css` file.
 
 ## What's Left to Build
 
+-   State management logic for `DropArea` (e.g., clearing files, triggering uploads).
 -   Actual features beyond the basic setup/counter example.
 -   Building UI using Mantine components.
 -   API endpoint implementation on the backend (`/api/*`).
@@ -36,7 +44,8 @@
 -   Initial project setup and core pattern definition complete.
 -   Mantine UI library integrated with default dark theme.
 -   GCP deployment pipeline established and automated via `npm run deploy`.
--   Ready for feature development using the established structure, patterns, and Mantine components.
+-   Basic `DropArea` component created and added to Home page.
+-   Ready for further feature development or refinement of `DropArea` state management.
 
 ## Known Issues
 

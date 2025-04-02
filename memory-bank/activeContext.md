@@ -1,9 +1,9 @@
-# Active Context: mKit (2025-04-02 12:59 PM)
+# Active Context: mKit (2025-04-02 1:55 PM)
 
 ## Current Focus
 
--   Ensuring the Google Cloud Platform deployment pipeline is stable and documented.
--   Transitioning back to feature development using the established patterns and Mantine UI library.
+-   Continue building out application features using the established patterns and Mantine UI library.
+-   Implement state management for dropped files in `DropArea` (e.g., clearing, uploading).
 
 ## Recent Changes
 
@@ -39,9 +39,19 @@
     -   Successfully re-deployed the application using `npm run deploy`.
     -   Verified the deployed application is working correctly.
     -   **Updated `DEPLOY-FROM-SCRATCH-GUIDE.md`** to reflect the working multi-stage `Dockerfile`, the absolute path fix in `server.ts`, the correct `.dockerignore` content, and added troubleshooting for path resolution errors.
+-   **Created `DropArea` Component:**
+    -   Installed `@mantine/dropzone` and `@tabler/icons-react` dependencies.
+    -   Created `DropArea.tsx`, `Script.ts`, `DropArea.css` in `client/src/components/DropArea/`.
+    -   Implemented Mantine `Dropzone` configured for audio files (accept, maxSize=100MB).
+    -   Added visual feedback for drag-over (`useWindowEvent`, conditional border).
+    -   Implemented display of dropped filenames.
+    -   Refactored state management (`isDraggingOverWindow`, `droppedFiles`) into `Script.ts` (Zustand).
+    -   Added height transition animation.
+    -   Moved static styles to `DropArea.css`.
+-   Added `DropArea` component to `client/src/pages/Home/Home.tsx`.
 
 ## Next Steps
 
 -   Thoroughly test the deployed application on Cloud Run.
--   Continue building out application features and components using Mantine UI and the established (`Component.tsx`/`Script.ts`/`Component.css`, no `useEffect`) pattern.
+-   Implement state management logic within `DropArea/Script.ts` (e.g., clearing files, triggering uploads).
 -   Implement API interactions between the frontend and backend.
