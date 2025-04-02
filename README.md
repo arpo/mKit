@@ -55,7 +55,7 @@ This command will:
 
 ## Deployment to Google Cloud Run
 
-This project uses Google Cloud Build to containerize the application and Google Cloud Run to host it.
+
 
 **Initial One-Time Setup:**
 If you are setting up this project in a *new* Google Cloud environment for the first time, follow the steps outlined in `GCP-INITIAL-SETUP-GUIDE.md`. This guide covers enabling APIs, creating service accounts, setting up Artifact Registry, and granting permissions.
@@ -67,7 +67,7 @@ If you are setting up this project in a *new* Google Cloud environment for the f
     ```bash
     gcloud auth login
     ```
-*   Ensure your GCP project (`sage-extension-455512-s0`) has the following APIs enabled: Cloud Build API (`cloudbuild.googleapis.com`), Artifact Registry API (`artifactregistry.googleapis.com`), and Cloud Run API (`run.googleapis.com`).
+*   Ensure your GCP project has the following APIs enabled: Cloud Build API (`cloudbuild.googleapis.com`), Artifact Registry API (`artifactregistry.googleapis.com`), and Cloud Run API (`run.googleapis.com`).
 *   Ensure you have an Artifact Registry Docker repository configured in your project (the `gcloud builds submit` command implicitly pushes to `gcr.io/[PROJECT_ID]/[IMAGE_NAME]`, but using Artifact Registry e.g., `[REGION]-docker.pkg.dev/[PROJECT_ID]/[REPO]/[IMAGE]` is recommended). The build command might need adjustment if using Artifact Registry.
 
 **Usage:**
