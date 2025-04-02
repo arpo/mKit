@@ -1,4 +1,4 @@
-# Progress: mKit (2025-04-02)
+# Progress: mKit (2025-04-02 1:00 PM)
 
 ## What Works
 
@@ -14,8 +14,12 @@
 -   **Build/Dev Scripts:** Root `package.json` updated for client/server development and builds.
 -   **Server Integration:** Vite proxy and production static serving configured.
 -   **Initial Documentation:** Memory Bank core files created/updated. `.clinerules` created.
--   **GCP Deployment Setup:** Initial configuration complete (Cloud Run, Cloud Build, Artifact Registry, Service Accounts, IAM roles for `mkit-001`). Application deployed successfully.
--   **Deployment Automation:** `npm run deploy` script created in root `package.json` for automated build and deployment to GCP.
+-   **GCP Deployment Setup (Project: `mkit-app-1`):**
+    -   Initial configuration complete (Cloud Run, Cloud Build, Artifact Registry, Service Accounts, IAM roles).
+    -   Dockerfile, `.dockerignore`, and `.gcloudignore` created.
+    -   Server path issue fixed (`server.ts` uses absolute path `/app/client/dist`).
+    -   Application deployed successfully to Cloud Run.
+-   **Deployment Automation:** `npm run deploy` script updated in root `package.json` with correct project details; successfully tested for automated build and deployment to GCP.
 
 ## What's Left to Build
 
@@ -31,8 +35,9 @@
 
 -   Initial project setup and core pattern definition complete.
 -   Mantine UI library integrated with default dark theme.
+-   GCP deployment pipeline established and automated via `npm run deploy`.
 -   Ready for feature development using the established structure, patterns, and Mantine components.
 
 ## Known Issues
 
--   None currently identified related to the setup.
+-   None currently identified related to the setup or deployment.

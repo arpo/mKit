@@ -29,9 +29,9 @@
 -   **Type Checking:** TypeScript (via `npm run build`)
 -   **Formatting:** Prettier (`npm run format`)
 -   **Deployment (GCP):**
-    -   **Hosting:** Google Cloud Run (`mkit-service` in `us-central1`).
+    -   **Hosting:** Google Cloud Run (`mkit-service` in `us-central1` for project `mkit-app-1`).
     -   **Containerization:** Docker (`Dockerfile`).
     -   **Build:** Google Cloud Build triggered via `gcloud builds submit`.
-    -   **Image Registry:** Google Artifact Registry (`mkit-docker-repo` in `us-central1`).
+    -   **Image Registry:** Google Artifact Registry (`mkit-repo` in `us-central1` for project `mkit-app-1`).
     -   **Automation:** Automated build and deployment via `npm run deploy` script in root `package.json`.
     -   **Setup/Details:** See `DEPLOY-FROM-SCRATCH-GUIDE.md` and `README.md` (Deployment section).
