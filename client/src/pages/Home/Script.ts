@@ -65,8 +65,8 @@ const parseProgress = (logs: string | null | undefined): number => {
 
 // Map Replicate status codes to user-friendly messages
 const statusMessages: { [key: string]: string } = {
-  starting: 'Booting...',
-  processing: 'Splitting audio tracks...',
+  starting: 'Booting up system (1-4 min)...',
+  processing: 'Processing audio tracks...',
   succeeded: 'Processing complete!',
   failed: 'Processing failed.',
   canceled: 'Processing canceled.',
@@ -534,7 +534,7 @@ useDropAreaStore.subscribe(
 export const getButtonState = (isLoading: boolean, status: string | null) => {
   // Default state: Ready to start
   if (!isLoading && !status) {
-    return { text: 'Start Splitting', color: 'blue', loading: false, disabled: false };
+    return { text: 'Start', color: 'blue', loading: false, disabled: false };
   }
 
   // Loading states
@@ -564,5 +564,5 @@ export const getButtonState = (isLoading: boolean, status: string | null) => {
   // }
 
   // Fallback for unexpected non-loading states
-  return { text: 'Start Splitting', color: 'blue', loading: false, disabled: false };
+  return { text: 'Start', color: 'blue', loading: false, disabled: false };
 };

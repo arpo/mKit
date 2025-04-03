@@ -43,7 +43,7 @@ function Home() {
   return (
     <div>
       <h1>mKit</h1>
-      <p>Upload your audio file below:</p>
+      <p>Upload your music file below:</p>
       {/* Removed parent div and LoadingOverlay */}
       <DropArea />
       <Stack mt="md" gap="sm">
@@ -145,7 +145,7 @@ function Home() {
         {/* Formatted Transcription Result */}
         {formattedTranscription && !isFormatting && !formattingError && (
            <Paper shadow="xs" p="md" mt="md" withBorder>
-             <Text fw={500} mb="xs">Formatted Lyrics:</Text>
+             <Text fw={500} mb="xs">Lyrics:</Text>
              <Text style={{ whiteSpace: 'pre-wrap' }}>{formattedTranscription}</Text>
            </Paper>
         )}
