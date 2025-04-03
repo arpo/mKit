@@ -99,10 +99,12 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
 
     const file = files[0]; // Assuming single file upload for now
     const formData = new FormData();
-    formData.append('audio', file); // Key must match upload.single('audio') in routes.ts
+    // Update key to 'audioFile' to match server/audio-split2/routes.cjs
+    formData.append('audioFile', file); 
 
     try {
-      const response = await fetch('/api/audio-split', {
+      // Update endpoint to the new one
+      const response = await fetch('/api/audio-split2', {
         method: 'POST',
         body: formData,
       });

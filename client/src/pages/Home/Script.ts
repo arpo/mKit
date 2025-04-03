@@ -126,7 +126,8 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
     console.log(`[Status Check] Attempting for ID: ${predictionId}`);
     try {
-      const url = `/api/audio-split/status/${predictionId}`;
+      // Update the URL to point to the new status endpoint
+      const url = `/api/audio-split2/status/${predictionId}`;
       const response = await fetch(url);
 
       if (!response.ok) {
