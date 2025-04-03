@@ -19,6 +19,7 @@ export interface HomeState {
     logs: string[];
   };
   predictionStartTime: number | null; // Timestamp when polling started
+  selectedAudioService: 'falai' | 'demucs'; // New: Service selection
 
   // Transcription State
   isTranscribing: boolean;
@@ -31,6 +32,7 @@ export interface HomeState {
   formattingError: string | null;
 
   // Actions
+  setAudioService: (service: 'falai' | 'demucs') => void; // New: Action to set service
   uploadAudioAndStartPolling: () => Promise<void>;
   startTranscription: (audioUrl: string) => Promise<void>; // Keep only one declaration
   formatTranscription: (textToFormat: string) => Promise<void>; // New action
@@ -89,6 +91,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
     logs: [],
   },
   predictionStartTime: null, // Initialize the new state field
+  selectedAudioService: 'falai', // Default to Fal AI
 
   // Transcription State Initialization
   isTranscribing: false,
@@ -99,6 +102,15 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   isFormatting: false,
   formattedTranscription: null,
   formattingError: null,
+
+  setAudioService: (service) => {
+    if (service === 'falai' || service === 'demucs') {
+      set({ selectedAudioService: service });
+      console.log(`[Audio Service] Set to: ${service}`);
+    } else {
+      console.warn(`[Audio Service] Invalid service selected: ${service}`);
+    }
+  },
 
   stopPolling: () => {
     if (pollingIntervalId) {
@@ -126,7 +138,8 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
     console.log(`[Status Check] Attempting for ID: ${predictionId}`);
     try {
-      const url = `/api/audio-split/status/${predictionId}`;
+      // Use the new service endpoint
+      const url = `/api/audio-service/status/${predictionId}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -209,19 +222,29 @@ export const useHomeStore = create<HomeState>((set, get) => ({
         stopPolling();
 
         // --- Trigger Transcription on Success ---
-        // Assuming result.output contains the URLs
-        if (result.output && typeof result.output.vocals === 'string') {
-           console.log(`[Transcription Trigger] Audio split succeeded. Vocal URL: ${result.output.vocals}`);
+        // Handle different output structures: Demucs (vocals only) might return a string directly, Fal AI returns an object
+        let vocalUrl: string | null = null;
+        if (result.output) {
+          if (typeof result.output === 'string') {
+            // Likely Demucs with stem='vocals', output is the direct URL
+            vocalUrl = result.output;
+             console.log(`[Transcription Trigger] Demucs vocal isolation succeeded. Vocal URL: ${vocalUrl}`);
+          } else if (typeof result.output === 'object' && typeof result.output.vocals === 'string') {
+            // Likely Fal AI (Spleeter), output is an object with stem URLs
+            vocalUrl = result.output.vocals;
+            console.log(`[Transcription Trigger] Fal AI split succeeded. Vocal URL: ${vocalUrl}`);
+          }
+        }
+
+        if (vocalUrl) {
            // Call the transcription action asynchronously (don't block polling logic)
-           get().startTranscription(result.output.vocals).catch(transcriptionError => {
+           get().startTranscription(vocalUrl).catch(transcriptionError => {
                console.error("[Transcription Trigger] Error starting transcription:", transcriptionError);
-               // Optionally update state if the trigger itself fails, though startTranscription handles its own errors
                set({ transcriptionError: "Failed to initiate transcription process." });
            });
         } else {
-             console.warn("[Transcription Trigger] Audio split succeeded, but vocal URL not found in expected format in result.output:", result.output);
-             // Set an error state specific to transcription start failure due to missing URL
-             set({ transcriptionError: "Audio split successful, but couldn't find vocal track URL for transcription.", isTranscribing: false });
+             console.warn("[Transcription Trigger] Processing succeeded, but vocal URL not found in expected format in result.output:", result.output);
+             set({ transcriptionError: "Processing successful, but couldn't find vocal track URL for transcription.", isTranscribing: false });
         }
         // --- End Transcription Trigger ---
 
@@ -374,12 +397,16 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
 
   uploadAudioAndStartPolling: async () => {
-    const { checkPredictionStatus, stopPolling } = get();
+    // Get selected service along with other needed state/actions
+    const { checkPredictionStatus, stopPolling, selectedAudioService } = get();
+    // **IMPORTANT:** The uploadAudio function in DropAreaStore needs to be updated
+    // to accept the service and append it to the URL.
+    // We'll assume it's updated for now and pass the service.
     const dropAreaUpload = useDropAreaStore.getState().uploadAudio;
-    
 
     // Ensure any previous polling is stopped before starting a new upload
     stopPolling();
+    // Reset transcription/formatting states as well
     set({
         isLoading: true, // Keep only one isLoading
         predictionId: null,
@@ -390,63 +417,91 @@ export const useHomeStore = create<HomeState>((set, get) => ({
           percentage: 0,
           message: statusMessages.uploading, // Show uploading message
           logs: [],
-        }
+        },
+        // Reset transcription/formatting on new upload
+        isTranscribing: false,
+        rawTranscriptionResult: null,
+        transcriptionError: null,
+        isFormatting: false,
+        formattedTranscription: null,
+        formattingError: null,
      });
 
     try {
-       // Trigger the upload using the DropAreaStore's action
-       await dropAreaUpload(); // This should set predictionId in DropAreaStore
+       console.log(`[Upload Trigger] Starting upload with service: ${selectedAudioService}`);
+       // Call the modified dropAreaUpload, which returns the result or throws error
+       const uploadResult = await dropAreaUpload(selectedAudioService);
 
-       // Sync predictionId from DropAreaStore to HomeStore after upload finishes
-       const newPredictionId = useDropAreaStore.getState().predictionId;
-       const uploadError = useDropAreaStore.getState().error;
+       console.log("[HomeStore] Received upload result:", uploadResult);
 
-       if(uploadError){
-         console.error("Upload failed via DropAreaStore:", uploadError);
-         set({ error: `Upload failed: ${uploadError}`, isLoading: false, predictionStatus: 'failed' });
-         return; // Don't start polling if upload failed
+       // Check the structure of the result to determine flow
+       if (uploadResult && uploadResult.id) {
+          // --- Handle Polling Start (Fal AI) ---
+          const newPredictionId = uploadResult.id;
+          const initialStatus = uploadResult.status || 'starting';
+          console.log(`[HomeStore] Initiating polling for ID: ${newPredictionId}`);
+          set({
+             predictionId: newPredictionId,
+             isLoading: true, // Polling is a loading state
+             predictionStatus: initialStatus,
+             progress: {
+                 percentage: 0,
+                 message: statusMessages[initialStatus] || 'Starting...',
+                 logs: []
+             },
+             predictionStartTime: Date.now(), // Record polling start time
+             finalResult: null,
+             error: null,
+          });
+          console.log(`[HomeStore] Polling setup complete. Performing initial status check for ID: ${newPredictionId}.`);
+          // Perform initial check immediately
+          await checkPredictionStatus();
+          // Start interval only if not already in a final state after the first check
+          const currentState = get();
+          if (!['succeeded', 'failed', 'canceled'].includes(currentState.predictionStatus || '') && !pollingIntervalId) {
+            pollingIntervalId = setInterval(() => {
+              checkPredictionStatus();
+            }, 3000) as unknown as number;
+            console.log(`[HomeStore] Polling interval started with ID: ${pollingIntervalId}`);
+          }
+
+       } else if (uploadResult && uploadResult.output) {
+          // --- Handle Direct Result (Demucs) ---
+          const directFinalResult = uploadResult.output;
+          console.log("[HomeStore] Received direct result:", directFinalResult);
+          set({
+            isLoading: false, // Processing is finished
+            predictionId: null, // No polling needed
+            predictionStatus: 'succeeded',
+            finalResult: directFinalResult,
+            error: null,
+            progress: { percentage: 100, message: statusMessages.succeeded, logs: [] },
+            predictionStartTime: null,
+          });
+          console.log("[HomeStore] State updated with direct result. Triggering transcription...");
+          // Trigger transcription immediately
+          if (typeof directFinalResult === 'string') {
+             get().startTranscription(directFinalResult).catch(transcriptionError => {
+               console.error("[HomeStore] Error starting transcription for direct result:", transcriptionError);
+               set({ transcriptionError: "Failed to initiate transcription process." });
+             });
+          } else {
+             // This case should ideally not happen based on backend logic, but handle defensively
+             console.warn("[HomeStore] Direct result received but is not a string:", directFinalResult);
+             set({ transcriptionError: "Processing successful, but couldn't find vocal track URL for transcription.", isTranscribing: false });
+          }
+       } else {
+          // Handle unexpected result structure from dropAreaUpload
+          console.error("[HomeStore] Unexpected result structure after upload:", uploadResult);
+          throw new Error("Received unexpected response after upload.");
        }
 
-       if (!newPredictionId) {
-         console.error("Upload completed but no prediction ID received from DropAreaStore.");
-         set({ error: "Upload finished but failed to get a prediction ID.", isLoading: false, predictionStatus: 'failed' });
-         return; // Don't start polling if no ID
-       }
-
-       // Successfully got ID, move to processing state
-       set({
-          predictionId: newPredictionId,
-          isLoading: true,
-          predictionStatus: 'processing', // Or 'starting' if Replicate uses that first
-          progress: {
-              percentage: 0, // Keep at 0 until first status check returns logs
-              message: statusMessages.starting || statusMessages.processing, // Show appropriate message
-              logs: []
-          },
-          predictionStartTime: Date.now(), // Record start time *before* first check
-       });
-
-       console.log(`[Polling] Starting for ID: ${newPredictionId}. Start time: ${get().predictionStartTime}`);
-
-       // Perform initial check immediately
-       await checkPredictionStatus();
-
-       // Start interval only if not already in a final state after the first check
-       const currentState = get();
-       if (!['succeeded', 'failed', 'canceled'].includes(currentState.predictionStatus || '') && !pollingIntervalId) {
-         pollingIntervalId = setInterval(() => {
-           checkPredictionStatus();
-         }, 3000) as unknown as number; // Poll every 3 seconds
-         console.log(`Polling started with interval ID: ${pollingIntervalId}`);
-       }
-
-    } catch (uploadError) {
-        // This catch might be redundant if dropAreaUpload handles its errors internally
-        // and sets the error state in DropAreaStore, which we checked above.
-        console.error("Error during uploadAudioAndStartPolling:", uploadError);
-        const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown upload error occurred.';
-        set({ error: `Upload initiation failed: ${errorMessage}`, isLoading: false, predictionStatus: 'failed' });
-        stopPolling(); // Ensure polling is stopped on error
+    } catch (caughtError) {
+        // Error thrown by dropAreaUpload or subsequent processing
+        console.error("[HomeStore] Error during uploadAudioAndStartPolling:", caughtError);
+        const errorMessage = caughtError instanceof Error ? caughtError.message : 'An unknown error occurred during upload/processing.';
+        set({ error: `Processing failed: ${errorMessage}`, isLoading: false, predictionStatus: 'failed' });
+        stopPolling(); // Ensure polling is stopped
     }
   },
 

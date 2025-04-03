@@ -11,15 +11,39 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 } // 100 MB limit
 });
 
-// Define the POST route for starting the audio split
+// Define the POST route for starting the audio processing
 router.post('/', upload.single('audio'), async (req, res, next) => { // Remove type annotations
   try {
-    console.log('Received request on /api/audio-split');
-    const prediction = await startSplittingProcess(req);
+    // Extract service from query parameters, default to 'falai'
+    let service = req.query.service;
+    if (service !== 'falai' && service !== 'demucs') {
+      console.warn(`Invalid or missing service query parameter: "${service}". Defaulting to 'falai'.`);
+      service = 'falai'; // Default service
+    }
+    console.log(`Received request on /api/audio-service with service: ${service}`);
 
-    res.status(202).json(prediction); // 202 Accepted
+    // Pass both req and service to the controller function
+    const result = await startSplittingProcess(req, service);
+
+    // Check the response type flag from the controller
+    if (result._serviceResponseType === 'direct') {
+      // Demucs finished via replicate.run, return 200 OK with the direct output
+      console.log(`[Routes] Sending direct result (200 OK) for service: ${service}`);
+      // Remove the internal flag before sending to client
+      const { _serviceResponseType, ...clientResult } = result;
+      res.status(200).json(clientResult);
+    } else {
+      // Fal AI needs polling, return 202 Accepted with prediction details
+      console.log(`[Routes] Sending polling info (202 Accepted) for service: ${service}`);
+      // Remove the internal flag before sending to client
+      const { _serviceResponseType, ...clientResult } = result;
+      res.status(202).json(clientResult);
+    }
+
   } catch (error) {
-    console.error('Error in /api/audio-split route:', error);
+    // Ensure the service context is included in the error log
+    const requestedService = req.query.service || 'default (falai)';
+    console.error(`Error in /api/audio-service route (service: ${requestedService}):`, error);
     if (error instanceof Error) {
         res.status(500).json({ message: error.message || 'Failed to process audio split request.' });
     } else {

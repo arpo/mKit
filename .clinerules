@@ -50,6 +50,7 @@ This file documents key patterns, preferences, and project intelligence learned 
 *   **Development Server (CRITICAL):** **DO NOT use 
 `npm run dev` or `npm run dev:client`
 The system is running already!!!!
+Instead tell user to restart the server
 *   **Cloud Run Environment Variables (CRITICAL):** Manage secrets (API keys like `FAL_KEY`, `REPLICATE_API_TOKEN`) and runtime variables (`NODE_ENV=production`) **directly in the Cloud Run service configuration** (via UI or `gcloud run services update ... --update-env-vars=...`). **DO NOT** embed secrets or use `--set-env-vars`/`--update-env-vars` within the `npm run deploy` script in `package.json`. This prevents accidental commits of secrets and ensures consistent configuration independent of the deploy script execution.
 *   **Node.js Module Loading (CJS/ESM Interop):** When using external libraries (especially those potentially authored as ESM) within the `.cjs` backend files, if `require()` fails or returns an unexpected structure (e.g., missing functions), try using dynamic `await import('package-name')` inside async functions. Check both the root export (`module.function`) and the default export (`module.default?.function`) for the required functionality.
 *   **Deployment (GCP):** Prefer using Cline (Sonnet model) for initial GCP setup and deployment. Use the following prompt structure:

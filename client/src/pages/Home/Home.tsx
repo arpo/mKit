@@ -1,4 +1,4 @@
-import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box, Alert, Paper, Loader } from '@mantine/core'; // Added Alert, Paper, Loader
+import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box, Alert, Paper, Loader, Select } from '@mantine/core'; // Added Select
 import { IconAlertCircle } from '@tabler/icons-react'; // Removed IconInfoCircle
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script'; // Still needed for droppedFiles check
@@ -27,6 +27,10 @@ function Home() {
   // Select actions from the HomeStore
   const uploadAudioAndStartPolling = useHomeStore((state) => state.uploadAudioAndStartPolling);
   const clearPrediction = useHomeStore((state) => state.clearPrediction);
+  const setAudioService = useHomeStore((state: HomeState) => state.setAudioService); // Get the new action
+
+  // Select the new state for the service selection
+  const selectedAudioService = useHomeStore((state: HomeState) => state.selectedAudioService);
 
   // Still need droppedFiles from DropArea to conditionally render buttons
   const droppedFiles = useDropAreaStore((state: DropAreaState) => state.droppedFiles);
@@ -46,6 +50,19 @@ function Home() {
       <p>Upload your music file below:</p>
       {/* Removed parent div and LoadingOverlay */}
       <DropArea />
+      {/* Add Service Selection Dropdown */}
+      <Select
+        label="Audio Separation Service"
+        placeholder="Choose service"
+        value={selectedAudioService}
+        onChange={(value) => setAudioService(value as 'falai' | 'demucs')} // Cast value
+        data={[
+          { value: 'falai', label: 'Fal AI (Standard Split - Vocals/Drums/Bass/Other)' },
+          { value: 'demucs', label: 'Demucs (Vocal Isolation Only)' },
+        ]}
+        mt="md"
+        disabled={isLoading} // Disable while processing
+      />
       <Stack mt="md" gap="sm">
         {/* Conditionally render the Start/Clear button using HomeStore state */}
         {/* Show Start if files are dropped AND there's no final result/active prediction */}
@@ -93,22 +110,32 @@ function Home() {
 
         {/* Display final results if available and not actively loading */}
         { finalResult && !isLoading && (
-            <Box mt="md" style={{display: 'none'}}>
-              <Text fw={500} mb="xs">Splitting Complete:</Text>
-              <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
-                {/* Add type check for finalResult before mapping */}
-                {finalResult && typeof finalResult === 'object' ? Object.entries(finalResult).map(([key, value]) => {
-                  // Ensure value is a non-empty string before rendering Anchor
-                  if (value && typeof value === 'string') {
-                    return (
-                      <Anchor href={value} target="_blank" key={key}>
-                        {key.charAt(0).toUpperCase() + key.slice(1)} {/* Capitalize key */}
-                      </Anchor>
-                    );
-                  }
-                  return null; // Don't render anything if value is not a string
-                }) : <Text size="sm">Processing result...</Text>}
-              </SimpleGrid>
+            <Box mt="md"> {/* Removed display:none */}
+              <Text fw={500} mb="xs">Processing Complete:</Text>
+              {/* Handle string output (Demucs vocals) */}
+              {typeof finalResult === 'string' ? (
+                  <Anchor href={finalResult} target="_blank">
+                    Vocals (MP3)
+                  </Anchor>
+              /* Handle object output (Fal AI) */
+              ) : typeof finalResult === 'object' && finalResult !== null ? (
+                <SimpleGrid cols={2} spacing="xs" verticalSpacing="xs">
+                  {Object.entries(finalResult).map(([key, value]) => {
+                    // Ensure value is a non-empty string before rendering Anchor
+                    if (value && typeof value === 'string') {
+                      return (
+                        <Anchor href={value} target="_blank" key={key}>
+                          {key.charAt(0).toUpperCase() + key.slice(1)} {/* Capitalize key */}
+                        </Anchor>
+                      );
+                    }
+                    return null; // Don't render anything if value is not a string
+                  })}
+                </SimpleGrid>
+              ) : (
+                <Text size="sm">Could not display result.</Text> // Fallback for unexpected format
+              )}
+              {/* Removed extra </SimpleGrid> here */}
             </Box>
         )}
 

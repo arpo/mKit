@@ -5,8 +5,8 @@ const express = require('express');
 const path = require('path');
 // __dirname is globally available in CommonJS
 
-// Import the new audio split router
-const audioSplitRouter = require('./audio-split/routes.cjs'); // Add .cjs extension
+// Import the refactored audio service router
+const audioServiceRouter = require('./audio-service/routes.cjs'); // Updated path
 // Import the audio-to-text router
 const audioToTextRouter = require('./audio-to-text/routes.cjs');
 // Import the gemini router
@@ -26,8 +26,8 @@ app.get('/health', (_req, res) => { // Remove Request, Response types
 // Enable JSON body parsing for API requests
 app.use(express.json()); // IMPORTANT: Add this before API routes that expect JSON bodies
 
-// Mount the audio split router
-app.use('/api/audio-split', audioSplitRouter);
+// Mount the audio service router
+app.use('/api/audio-service', audioServiceRouter); // Updated path and variable
 // Mount the audio-to-text router
 app.use('/api/audio-to-text', audioToTextRouter);
 // Mount the gemini router

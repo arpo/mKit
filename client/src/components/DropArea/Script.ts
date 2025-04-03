@@ -17,7 +17,8 @@ export interface DropAreaActions {
   setDragging: (dragging: boolean) => void;
   handleFileDrop: (files: File[]) => void;
   handleFileReject: (rejections: any[]) => void;
-  uploadAudio: () => Promise<void>;
+  // Return the result object or throw error
+  uploadAudio: (service: 'falai' | 'demucs') => Promise<any>;
   clearFiles: () => void;
   // Add simple setters to be called from component effects
   setIsLoading: (loading: boolean) => void;
@@ -86,23 +87,30 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
     });
   },
 
-  uploadAudio: async () => {
+  // Modified to return result object or throw error
+  uploadAudio: async (service) => {
     const files = get().droppedFiles;
     if (files.length === 0) {
-      console.error('No file selected for upload.');
-      set({ error: 'No file selected.' });
-      return;
+      const errorMsg = 'No file selected.';
+      console.error(errorMsg);
+      set({ error: errorMsg });
+      throw new Error(errorMsg); // Throw error instead of returning void
     }
-    // Don't need to stop polling here anymore
-    // Start loading, clear previous results/errors
-    set({ isLoading: true, error: null, predictionId: null, predictionStatus: 'uploading', finalResult: null });
 
-    const file = files[0]; // Assuming single file upload for now
+    // Start loading, clear previous errors
+    // No longer setting predictionId, predictionStatus, finalResult here
+    set({ isLoading: true, error: null });
+
+    const file = files[0]; // Assuming single file upload
     const formData = new FormData();
-    formData.append('audio', file); // Key must match upload.single('audio') in routes.ts
+    formData.append('audio', file); // Key must match upload.single('audio') in routes.cjs
 
     try {
-      const response = await fetch('/api/audio-split', {
+      // Construct URL with service query parameter
+      const url = `/api/audio-service?service=${service}`;
+      console.log(`[Upload] Sending request to: ${url}`);
+
+      const response = await fetch(url, { // Use the new URL
         method: 'POST',
         body: formData,
       });
@@ -111,27 +119,22 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
 
       if (!response.ok) {
         // Throw error with message from backend if available
-        throw new Error(result.message || `HTTP error! status: ${response.status}`);
+        const errorMsg = result.message || `HTTP error! status: ${response.status}`;
+        throw new Error(errorMsg); // Throw error to be caught below
       }
 
-      console.log('[Upload] Response:', result);
-      if (!result.id) {
-        throw new Error('No prediction ID received from server');
-      }
-      console.log('[Upload] Setting prediction ID:', result.id);
-      // Only store ID and initial status. Keep loading true. Polling handled by component.
-      set({ 
-        predictionId: result.id, 
-        predictionStatus: result.status || 'starting', 
-        isLoading: true 
-      });
-      console.log('[Upload] Store updated with ID and status');
+      console.log(`[Upload] Response Status: ${response.status}`, result);
+
+      // Success - set loading false and return the result object
+      set({ isLoading: false, error: null });
+      return result; // Return the JSON response body
 
     } catch (error) {
       console.error('File upload failed:', error);
-      // Don't need to stop polling here anymore
       const errorMessage = error instanceof Error ? error.message : 'An unknown upload error occurred.';
-      set({ error: errorMessage, isLoading: false, predictionStatus: 'failed' });
+      // Set error state and re-throw for the calling function (HomeStore) to handle
+      set({ error: errorMessage, isLoading: false });
+      throw error; // Re-throw the error
     }
   },
 
