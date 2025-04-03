@@ -9,6 +9,8 @@ const path = require('path');
 const audioSplitRouter = require('./audio-split/routes.cjs'); // Add .cjs extension
 // Import the audio-to-text router
 const audioToTextRouter = require('./audio-to-text/routes.cjs');
+// Import the gemini router
+const geminiRouter = require('./gemini/routes.cjs');
 
 const app = express(); // Remove Express type hint
 // Cloud Run provides the port number via the PORT environment variable.
@@ -28,6 +30,8 @@ app.use(express.json()); // IMPORTANT: Add this before API routes that expect JS
 app.use('/api/audio-split', audioSplitRouter);
 // Mount the audio-to-text router
 app.use('/api/audio-to-text', audioToTextRouter);
+// Mount the gemini router
+app.use('/api/gemini', geminiRouter);
 // Add other API routers here before static file serving
 
 // --- New: Serve React App Static Files (Production Only) ---

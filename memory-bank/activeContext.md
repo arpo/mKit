@@ -1,4 +1,4 @@
-# Active Context: mKit (2025-04-03 1:40 PM)
+# Active Context: mKit (2025-04-03 1:57 PM)
 
 ## Current Focus
 
@@ -7,6 +7,11 @@
 
 ## Recent Changes
 
+*   **Implemented `/api/gemini` Endpoint:**
+    *   Added `server/gemini/` route and controller using Google Gemini API (`@google/generative-ai` package).
+    *   Installed `@google/generative-ai` dependency.
+    *   Configured controller to use `GEMINI_API_KEY` from `.env`.
+    *   Mounted router in `server/server.cjs` at `/api/gemini`.
 *   Implemented `/api/audio-split` endpoint using Replicate (previously done).
 *   **Implemented `/api/audio-to-text` Endpoint:**
     *   Added `server/audio-to-text/` route and controller using Fal AI (`fal-ai/wizper` model).
