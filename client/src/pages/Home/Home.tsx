@@ -15,8 +15,14 @@ function Home() {
 
   // Select transcription state
   const isTranscribing = useHomeStore((state: HomeState) => state.isTranscribing);
-  const transcriptionResult = useHomeStore((state: HomeState) => state.transcriptionResult);
+  // const rawTranscriptionResult = useHomeStore((state: HomeState) => state.rawTranscriptionResult); // No longer needed for display
   const transcriptionError = useHomeStore((state: HomeState) => state.transcriptionError);
+
+  // Select formatting state (New)
+  const isFormatting = useHomeStore((state: HomeState) => state.isFormatting);
+  const formattedTranscription = useHomeStore((state: HomeState) => state.formattedTranscription);
+  const formattingError = useHomeStore((state: HomeState) => state.formattingError);
+
 
   // Select actions from the HomeStore
   const uploadAudioAndStartPolling = useHomeStore((state) => state.uploadAudioAndStartPolling);
@@ -115,18 +121,35 @@ function Home() {
             </Stack>
           </Box>
         )}
-        {transcriptionError && !isTranscribing && (
+        {/* Transcription Error */}
+        {transcriptionError && !isTranscribing && !isFormatting && (
            <Alert icon={<IconAlertCircle size="1rem" />} title="Transcription Error" color="red" mt="md">
              {transcriptionError}
            </Alert>
         )}
-        {transcriptionResult && !isTranscribing && !transcriptionError && (
+        {/* Formatting Loader */}
+        {isFormatting && (
+          <Box mt="md" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
+            <Stack align="center" gap="xs">
+              <Loader size="sm" />
+              <Text>Formatting lyrics...</Text>
+            </Stack>
+          </Box>
+        )}
+        {/* Formatting Error */}
+        {formattingError && !isFormatting && (
+           <Alert icon={<IconAlertCircle size="1rem" />} title="Formatting Error" color="red" mt="md">
+             {formattingError}
+           </Alert>
+        )}
+        {/* Formatted Transcription Result */}
+        {formattedTranscription && !isFormatting && !formattingError && (
            <Paper shadow="xs" p="md" mt="md" withBorder>
-             <Text fw={500} mb="xs">Transcription:</Text>
-             <Text style={{ whiteSpace: 'pre-wrap' }}>{transcriptionResult}</Text>
+             <Text fw={500} mb="xs">Formatted Lyrics:</Text>
+             <Text style={{ whiteSpace: 'pre-wrap' }}>{formattedTranscription}</Text>
            </Paper>
         )}
-        {/* End Transcription Display */}
+        {/* End Transcription/Formatting Display */}
 
       </Stack>
     </div>

@@ -1,4 +1,4 @@
-# Progress: mKit (2025-04-03 1:57 PM)
+# Progress: mKit (2025-04-03 2:07 PM)
 
 ## What Works
 
@@ -27,14 +27,16 @@
     *   Frontend (`Home/Script.ts`) correctly parses the normalized response.
 *   **Git Push Protection:** Resolved by removing secrets from `package.json` deploy script and cleaning Git history.
 *   **Gemini Endpoint (`/api/gemini`, Google AI):** Functional backend endpoint. Takes a prompt via POST and returns a text response. Uses `GEMINI_API_KEY` from `.env`.
+*   **Gemini Formatting Integration (Frontend):**
+    *   Added state and actions to `Home/Script.ts` to call `/api/gemini` after transcription.
+    *   Modified `Home/Home.tsx` to display a formatting loader and the final formatted lyrics from Gemini.
 
 ## What's Left to Build
 
 *   **Result Display UI:** Refine how audio split results (e.g., file links) and transcription text are presented to the user.
 *   **Error Handling/UI:** Improve user feedback for various error states (upload fail, processing fail, transcription fail, timeouts).
 *   **UI Refinements:** Add ability to clear dropped files/results easily. Potentially improve progress indication.
-*   **Testing:** Add unit/integration tests for backend endpoints and frontend logic.
-*   **Gemini Integration:** Integrate the `/api/gemini` endpoint into the frontend UI.
+*   **Testing:** Add unit/integration tests for backend endpoints and frontend logic (including formatting step).
 *   **Cleanup:** Remove unused `server/ts` directory and `tsconfig.server.json`. Adjust `.gitignore` if needed.
 *   Further application features.
 

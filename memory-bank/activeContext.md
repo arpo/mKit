@@ -1,4 +1,4 @@
-# Active Context: mKit (2025-04-03 1:57 PM)
+# Active Context: mKit (2025-04-03 2:07 PM)
 
 ## Current Focus
 
@@ -7,6 +7,16 @@
 
 ## Recent Changes
 
+*   **Integrated Gemini Formatting into Frontend:**
+    *   Modified `client/src/pages/Home/Script.ts` (Zustand store):
+        *   Added state variables (`isFormatting`, `formattedTranscription`, `formattingError`).
+        *   Added `formatTranscription` action to call `/api/gemini` with the lyric formatting prompt.
+        *   Modified `startTranscription` action to trigger `formatTranscription` after successful transcription, storing the raw text internally (`rawTranscriptionResult`).
+        *   Updated reset logic.
+    *   Modified `client/src/pages/Home/Home.tsx`:
+        *   Added loading state for formatting.
+        *   Display the `formattedTranscription` from Gemini instead of the raw transcription.
+        *   Display formatting errors.
 *   **Implemented `/api/gemini` Endpoint:**
     *   Added `server/gemini/` route and controller using Google Gemini API (`@google/generative-ai` package).
     *   Installed `@google/generative-ai` dependency.
@@ -54,7 +64,7 @@
 
 ## Next Steps
 
-*   Refine UI for displaying audio split and transcription results.
-*   Enhance error handling and user feedback messages.
-*   Consider adding tests for new features.
+*   Refine UI for displaying audio split results (the formatted lyrics display is now implemented).
+*   Enhance error handling and user feedback messages (especially around the formatting step).
+*   Consider adding tests for new features (Gemini formatting).
 *   Continue implementing other project features.

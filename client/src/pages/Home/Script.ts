@@ -22,12 +22,18 @@ export interface HomeState {
 
   // Transcription State
   isTranscribing: boolean;
-  transcriptionResult: string | null;
+  rawTranscriptionResult: string | null; // Renamed for clarity, stores raw text
   transcriptionError: string | null;
+
+  // Formatting State (New)
+  isFormatting: boolean;
+  formattedTranscription: string | null; // Stores Gemini formatted result
+  formattingError: string | null;
 
   // Actions
   uploadAudioAndStartPolling: () => Promise<void>;
-  startTranscription: (audioUrl: string) => Promise<void>; // New action
+  startTranscription: (audioUrl: string) => Promise<void>; // Keep only one declaration
+  formatTranscription: (textToFormat: string) => Promise<void>; // New action
   clearPrediction: () => void;
   checkPredictionStatus: () => Promise<void>; // Made explicit action
   stopPolling: () => void; // Explicit action to stop
@@ -86,8 +92,13 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
   // Transcription State Initialization
   isTranscribing: false,
-  transcriptionResult: null,
+  rawTranscriptionResult: null, // Renamed
   transcriptionError: null,
+
+  // Formatting State Initialization (New)
+  isFormatting: false,
+  formattedTranscription: null,
+  formattingError: null,
 
   stopPolling: () => {
     if (pollingIntervalId) {
@@ -245,7 +256,15 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   // --- New Transcription Action ---
   startTranscription: async (audioUrl) => {
     console.log(`[Transcription] Starting for URL: ${audioUrl}`);
-    set({ isTranscribing: true, transcriptionResult: null, transcriptionError: null });
+    // Reset formatting state when transcription starts
+    set({
+      isTranscribing: true,
+      rawTranscriptionResult: null, // Renamed
+      transcriptionError: null,
+      isFormatting: false,
+      formattedTranscription: null,
+      formattingError: null
+    });
 
     try {
       const response = await fetch('/api/audio-to-text', {
@@ -272,11 +291,18 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       const transcribedText = result?.text;
 
       if (typeof transcribedText === 'string') {
+        console.log("[Transcription] Success, raw text received. Storing and starting formatting.");
         set({
-          isTranscribing: false,
-          transcriptionResult: transcribedText,
+          isTranscribing: false, // Transcription itself is done
+          rawTranscriptionResult: transcribedText, // Store raw text internally
           transcriptionError: null,
         });
+        // --- Trigger Formatting ---
+        get().formatTranscription(transcribedText).catch(formattingError => {
+             console.error("[Transcription Flow] Error calling formatTranscription:", formattingError);
+             // The formatTranscription action handles its own state updates on error
+        });
+        // --- End Trigger Formatting ---
       } else {
         // Handle cases where the expected structure is missing
         console.error("[Transcription] Unexpected result structure:", result);
@@ -288,12 +314,64 @@ export const useHomeStore = create<HomeState>((set, get) => ({
        const errorMessage = error instanceof Error ? error.message : 'An unknown transcription error occurred.';
       set({
         isTranscribing: false,
-        transcriptionResult: null,
+        rawTranscriptionResult: null, // Corrected from transcriptionResult
         transcriptionError: `Transcription failed: ${errorMessage}`,
       });
     }
   },
   // --- End New Transcription Action ---
+
+  // --- New Formatting Action ---
+  formatTranscription: async (textToFormat) => {
+      console.log(`[Formatting] Starting for text: "${textToFormat.substring(0, 50)}..."`);
+      set({ isFormatting: true, formattedTranscription: null, formattingError: null });
+
+      const prompt = `This is a song lyric. Formate it to better look like a lyric. Dont include sections like [verse] [chorus]:\n\n${textToFormat}`;
+
+      try {
+          const response = await fetch('/api/gemini', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ prompt }),
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json().catch(() => ({
+                  message: `HTTP error! status: ${response.status}`
+              }));
+              throw new Error(errorData.details || errorData.message || `HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("[Formatting] Success:", result);
+
+          const formattedText = result?.result;
+
+          if (typeof formattedText === 'string') {
+              set({
+                  isFormatting: false,
+                  formattedTranscription: formattedText,
+                  formattingError: null,
+              });
+          } else {
+              console.error("[Formatting] Unexpected result structure:", result);
+              throw new Error("Received formatting result in an unexpected format.");
+          }
+
+      } catch (error) {
+          console.error("[Formatting] Failed:", error);
+          const errorMessage = error instanceof Error ? error.message : 'An unknown formatting error occurred.';
+          set({
+              isFormatting: false,
+              formattedTranscription: null,
+              formattingError: `Formatting failed: ${errorMessage}`,
+          });
+      }
+  },
+  // --- End New Formatting Action ---
+
 
   uploadAudioAndStartPolling: async () => {
     const { checkPredictionStatus, stopPolling } = get();
@@ -394,8 +472,12 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       predictionStartTime: null, // Reset start time on clear
       // Reset transcription state on clear
       isTranscribing: false,
-      transcriptionResult: null,
+      rawTranscriptionResult: null, // Renamed
       transcriptionError: null,
+      // Reset formatting state on clear (New)
+      isFormatting: false,
+      formattedTranscription: null,
+      formattingError: null,
     });
     // Ensure DropArea state is also cleared
     useDropAreaStore.setState({
