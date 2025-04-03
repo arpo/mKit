@@ -72,10 +72,30 @@ async function handleTranscriptionRequest(req, res) {
       },
     });
 
-    console.log(`[Fal AI Wizper] Success. Request ID: ${result.requestId}`);
-    // The actual transcription data should be in result.data or similar based on Fal AI's structure
-    // Assuming the structure from the example:
-    res.status(200).json(result.data || result); // Send back the result data
+    console.log(`[Fal AI Wizper] Success. Raw result:`, result); // Log raw result for debugging
+
+    // Normalize the response structure before sending to client
+    let responsePayload = {
+        text: null,
+        chunks: null,
+        requestId: result?.requestId // Include request ID if available
+    };
+
+    // Check for text in both potential locations
+    if (typeof result?.text === 'string') {
+        responsePayload.text = result.text;
+        responsePayload.chunks = result.chunks; // Assume chunks are at the same level if text is
+    } else if (typeof result?.transcription?.text === 'string') {
+        responsePayload.text = result.transcription.text;
+        responsePayload.chunks = result.transcription.chunks; // Assume chunks are nested with text
+    } else {
+        // Handle case where text is not found in either expected location
+        console.error("[Fal AI Wizper] Could not find 'text' or 'transcription.text' in the result:", result);
+        throw new Error("Transcription completed but result format was unrecognized by the server.");
+    }
+
+    console.log(`[Fal AI Wizper] Sending normalized payload:`, responsePayload);
+    res.status(200).json(responsePayload); // Send back the normalized structure
 
   } catch (error) {
     console.error("[Fal AI Wizper] Error during transcription:", error);
