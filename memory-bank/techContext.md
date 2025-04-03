@@ -4,9 +4,10 @@
 
 -   **Runtime:** Node.js
 -   **Framework:** Express.js
--   **Language:** TypeScript (compiled, server config: `tsconfig.server.json`)
+-   **Language:** JavaScript (CommonJS, `.cjs` files). Originally TypeScript, but converted due to module resolution issues during development.
 -   **Package Manager:** npm (root level)
--   **Development:** `nodemon`, `tsx`
+-   **Development:** `nodemon` watching `.cjs` files.
+-   **Dependencies:** `express`, `dotenv`, `multer`, `replicate`, `@fal-ai/serverless-client`.
 -   **Deployment:** Dockerfile exists (for containerization via Cloud Build). See `Tooling & Conventions` below.
 
 ## Frontend (`/client`)
@@ -29,9 +30,10 @@
 -   **Type Checking:** TypeScript (via `npm run build`)
 -   **Formatting:** Prettier (`npm run format`)
 -   **Deployment (GCP):**
-    -   **Hosting:** Google Cloud Run (`mkit-service` in `us-central1` for project `mkit-app-1`).
-    -   **Containerization:** Docker (`Dockerfile`).
-    -   **Build:** Google Cloud Build triggered via `gcloud builds submit`.
-    -   **Image Registry:** Google Artifact Registry (`mkit-repo` in `us-central1` for project `mkit-app-1`).
-    -   **Automation:** Automated build and deployment via `npm run deploy` script in root `package.json`.
-    -   **Setup/Details:** See `DEPLOY-FROM-SCRATCH-GUIDE.md` and `README.md` (Deployment section).
+    *   **Hosting:** Google Cloud Run (`mkit-service` in `us-central1` for project `mkit-app-1`).
+    *   **Containerization:** Docker (`Dockerfile`).
+    *   **Build:** Google Cloud Build triggered via `gcloud builds submit`.
+    *   **Image Registry:** Google Artifact Registry (`mkit-repo` in `us-central1` for project `mkit-app-1`).
+    *   **Automation:** `npm run deploy` script handles build and basic deployment.
+    *   **Secrets Management:** API keys (Replicate, Fal AI) and `NODE_ENV` are managed **directly in the Cloud Run service configuration** (via UI or `gcloud run services update`). They are **NOT** set via flags in the `npm run deploy` script to avoid committing secrets.
+    *   **Setup/Details:** See `DEPLOY-FROM-SCRATCH-GUIDE.md` and `README.md` (Deployment section).

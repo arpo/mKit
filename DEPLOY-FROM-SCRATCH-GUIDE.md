@@ -254,21 +254,33 @@ gcloud auth list
             --allow-unauthenticated `# Makes the service publicly accessible. Remove if authentication is needed.` \
             --project=[YOUR_PROJECT_ID]
         ```
+    *   **IMPORTANT: Set Environment Variables (Secrets & Config):** Use the Cloud Console UI or a separate `gcloud` command to set necessary environment variables (like `NODE_ENV=production`, `REPLICATE_API_TOKEN`, `FAL_KEY`) **directly on the Cloud Run service**.
+        ```bash
+        # Example using gcloud (run authenticated as user or deployer SA)
+        # Replace placeholders and variable list as needed
+        gcloud run services update [SERVICE_NAME] --region=[REGION] --project=[YOUR_PROJECT_ID] \
+          --update-env-vars="NODE_ENV=production,REPLICATE_API_TOKEN=[REPLICATE_KEY],FAL_KEY=[FAL_KEY_VALUE]"
+        ```
+        **DO NOT** include secrets or the `--update-env-vars` / `--set-env-vars` flags within the `npm run deploy` script in `package.json` to avoid committing sensitive information.
     *   *(Optional: Re-authenticate as your user: `gcloud auth login`)*
 
-5.  **Automating Deployment (Recommended):**
-    After confirming the manual deployment works, automate the process by adding a deploy script to your `package.json`:
+5.  **Automating Build & Deploy (Recommended):**
+    After confirming the manual deployment works, automate the *build and push* process by adding a deploy script to your `package.json`. This script should **NOT** manage environment variables.
     ```json
     {
       "scripts": {
+        // This script builds the image and deploys it, relying on manually set env vars in Cloud Run.
         "deploy": "npm run build && gcloud builds submit --tag [REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:latest . && gcloud run deploy [SERVICE_NAME] --image=[REGION]-docker.pkg.dev/[YOUR_PROJECT_ID]/[REPOSITORY_NAME]/[IMAGE_NAME]:latest --region=[REGION] --platform=managed --service-account=[RUNTIME_SA_EMAIL] --allow-unauthenticated --project=[YOUR_PROJECT_ID]"
       }
     }
     ```
-    Now you can deploy with a single command:
+    Now you can build and deploy a new image revision with:
     ```bash
+    # Authenticate as Deployer SA first if needed:
+    # gcloud auth activate-service-account --key-file=./[KEY_FILE_NAME].json
     npm run deploy
     ```
+    Remember to manage environment variables separately via the Cloud Console or `gcloud run services update`.
 
 ## Troubleshooting
 
