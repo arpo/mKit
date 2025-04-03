@@ -373,9 +373,11 @@ export const useHomeStore = create<HomeState>((set, get) => ({
           const formattedText = result?.result;
 
           if (typeof formattedText === 'string') {
+              // Remove ♪ character before setting state
+              const cleanedText = formattedText.replace(/♪/g, '').trim();
               set({
                   isFormatting: false,
-                  formattedTranscription: formattedText,
+                  formattedTranscription: cleanedText, // Use cleaned text
                   formattingError: null,
               });
           } else {

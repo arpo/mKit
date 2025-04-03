@@ -110,7 +110,7 @@ function Home() {
 
         {/* Display final results if available and not actively loading */}
         { finalResult && !isLoading && (
-            <Box mt="md" style={{ display: 'none' }}> {/* Added display:none back */}
+            <Box mt="md" style={{ display: 'block' }}> {/* Added display:none back */}
               <Text fw={500} mb="xs">Processing Complete:</Text>
               {/* Handle string output (Demucs vocals) */}
               {typeof finalResult === 'string' ? (
