@@ -91,7 +91,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
     logs: [],
   },
   predictionStartTime: null, // Initialize the new state field
-  selectedAudioService: 'falai', // Default to Fal AI
+  selectedAudioService: 'demucs', // Default to Demucs
 
   // Transcription State Initialization
   isTranscribing: false,

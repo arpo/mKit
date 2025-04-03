@@ -55,10 +55,10 @@ function Home() {
         label="Audio Separation Service"
         placeholder="Choose service"
         value={selectedAudioService}
-        onChange={(value) => setAudioService(value as 'falai' | 'demucs')} // Cast value
+        onChange={(value) => setAudioService(value as 'falai' | 'demucs')} // Cast value - 'falai' is the internal key
         data={[
-          { value: 'falai', label: 'Fal AI (Standard Split - Vocals/Drums/Bass/Other)' },
-          { value: 'demucs', label: 'Demucs (Vocal Isolation Only)' },
+          { value: 'falai', label: 'Spleeter (Replicate - Standard Split)' }, // Corrected Label
+          { value: 'demucs', label: 'Demucs (Replicate - Vocal Isolation)' }, // Added Replicate for consistency
         ]}
         mt="md"
         disabled={isLoading} // Disable while processing
@@ -110,7 +110,7 @@ function Home() {
 
         {/* Display final results if available and not actively loading */}
         { finalResult && !isLoading && (
-            <Box mt="md"> {/* Removed display:none */}
+            <Box mt="md" style={{ display: 'none' }}> {/* Added display:none back */}
               <Text fw={500} mb="xs">Processing Complete:</Text>
               {/* Handle string output (Demucs vocals) */}
               {typeof finalResult === 'string' ? (
