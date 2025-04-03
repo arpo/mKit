@@ -5,7 +5,7 @@ import { useDropAreaStore } from '../../components/DropArea/Script';
 // or manage it within an effect inside the store if using middleware.
 // For simplicity here, we manage it via actions.
 let pollingIntervalId: number | null = null;
-const MAX_PROCESSING_TIME_MS = 3 * 60 * 1000; // 3 minutes timeout
+const MAX_PROCESSING_TIME_MS = 6 * 60 * 1000; // 6 minutes timeout
 
 export interface HomeState {
   isLoading: boolean;
@@ -59,7 +59,7 @@ const parseProgress = (logs: string | null | undefined): number => {
 
 // Map Replicate status codes to user-friendly messages
 const statusMessages: { [key: string]: string } = {
-  starting: 'Initializing audio processor...',
+  starting: 'Booting...',
   processing: 'Splitting audio tracks...',
   succeeded: 'Processing complete!',
   failed: 'Processing failed.',
@@ -268,9 +268,8 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       const result = await response.json();
       console.log("[Transcription] Success:", result);
 
-      // Extract the text - This might need adjustment based on Fal AI's actual response structure
-      // Extract the text based on the feedback structure: { transcription: { text: "..." } }
-      const transcribedText = result?.transcription?.text;
+      // Extract the text directly from the result object
+      const transcribedText = result?.text;
 
       if (typeof transcribedText === 'string') {
         set({
