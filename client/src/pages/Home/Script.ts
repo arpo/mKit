@@ -299,7 +299,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   uploadAudioAndStartPolling: async () => {
     const { checkPredictionStatus, stopPolling } = get();
     const dropAreaUpload = useDropAreaStore.getState().uploadAudio;
-    const dropAreaClear = useDropAreaStore.getState().clearFiles;
+    
 
     // Ensure any previous polling is stopped before starting a new upload
     stopPolling();
@@ -375,11 +375,12 @@ export const useHomeStore = create<HomeState>((set, get) => ({
 
   clearPrediction: () => {
     const { stopPolling } = get();
-    const dropAreaClear = useDropAreaStore.getState().clearFiles;
+    // Get the action directly from the store instance
+    const clearDropAreaFiles = useDropAreaStore.getState().clearFiles;
 
     console.log('[Clear] Clearing prediction state and stopping polling.');
     stopPolling();
-    dropAreaClear(); // Clear DropArea state as well
+    clearDropAreaFiles(); // Call the action to clear DropArea state
     set({
       isLoading: false,
       predictionId: null,

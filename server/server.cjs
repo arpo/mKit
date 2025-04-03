@@ -30,17 +30,14 @@ app.use('/api/audio-split', audioSplitRouter);
 app.use('/api/audio-to-text', audioToTextRouter);
 // Add other API routers here before static file serving
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '../public'))); // Keep serving existing public files if needed
-
 // --- New: Serve React App Static Files (Production Only) ---
+// Removed unnecessary static middleware for root /public
 if (process.env.NODE_ENV === 'production') {
   // Use absolute path for client build
   // NOTE: This path might need adjustment depending on the final deployment structure
   // If the server runs from /dist, __dirname might be different.
-  // But for Cloud Run, the Dockerfile usually sets WORKDIR /app,
-  // so /app/client/dist should be correct relative to the container root.
-  const clientBuildPath = path.resolve(__dirname, '../../client/dist'); // Try resolving relative to server.js location
+  // But for Cloud Run, the Dockerfile sets WORKDIR /app. Use absolute path directly.
+  const clientBuildPath = '/app/client/dist'; // Use absolute path based on WORKDIR
   console.log('Attempting to serve static files from:', clientBuildPath);
 
   app.use(express.static(clientBuildPath));
@@ -48,7 +45,8 @@ if (process.env.NODE_ENV === 'production') {
   // --- New: Catch-all for Client-Side Routing (Production Only) ---
   // This should come after API routes and other static file serving
   app.get('*', (_req, res) => { // Remove Request, Response types
-    const indexPath = path.join(clientBuildPath, 'index.html');
+    // Construct path manually as a test
+    const indexPath = clientBuildPath + '/index.html';
     console.log('Serving index from:', indexPath);
     res.sendFile(indexPath, (err) => {
       if (err) {

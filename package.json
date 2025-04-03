@@ -113,7 +113,7 @@
     "build": "npm run build:client",
     "start": "NODE_ENV=production node server/server.cjs",
     "format": "prettier --write \"server/**/*.cjs\" \"client/src/**/*.{ts,tsx,css}\"",
-    "deploy": "npm run build:client && gcloud builds submit --tag us-central1-docker.pkg.dev/mkit-app-1/mkit-repo/mkit-image:latest . && gcloud run deploy mkit-service --image=us-central1-docker.pkg.dev/mkit-app-1/mkit-repo/mkit-image:latest --region=us-central1 --platform=managed --service-account=1059533035754-compute@developer.gserviceaccount.com --allow-unauthenticated --project=mkit-app-1"
+    "deploy": "npm run build:client && gcloud builds submit --tag us-central1-docker.pkg.dev/mkit-app-1/mkit-repo/mkit-image:latest . && gcloud run deploy mkit-service --image=us-central1-docker.pkg.dev/mkit-app-1/mkit-repo/mkit-image:latest --region=us-central1 --platform=managed --service-account=1059533035754-compute@developer.gserviceaccount.com --allow-unauthenticated --project=mkit-app-1 --set-env-vars=\"REPLICATE_API_TOKEN=r8_b2k8iUHtILKBoD2vFoRL08zfzedVJdn0tOtNJ,FAL_API_TOKEN=65dd2a89-554f-466e-be44-aa28d2488571:656707bed6462ef168c3c84e4b8bf9df\""
   },
   "keywords": [],
   "author": "",

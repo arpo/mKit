@@ -1,5 +1,5 @@
 // Remove useState import as it's no longer needed for drag state
-import { Group, Text, rem, useMantineTheme } from '@mantine/core';
+import { Group, Text, useMantineTheme } from '@mantine/core'; // Removed rem
 import { useWindowEvent } from '@mantine/hooks'; // Import useWindowEvent
 import { IconUpload, IconFileMusic, IconX } from '@tabler/icons-react';
 import { Dropzone, DropzoneProps } from '@mantine/dropzone';

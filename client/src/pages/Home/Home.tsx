@@ -1,5 +1,5 @@
 import { Button, Text, Stack, Anchor, SimpleGrid, Progress, Box, Alert, Paper, Loader } from '@mantine/core'; // Added Alert, Paper, Loader
-import { IconAlertCircle, IconInfoCircle } from '@tabler/icons-react'; // Added icons
+import { IconAlertCircle } from '@tabler/icons-react'; // Removed IconInfoCircle
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore, DropAreaState } from '../../components/DropArea/Script'; // Still needed for droppedFiles check
 import { useHomeStore, HomeState, getButtonState } from './Script'; // Import the new store, state type, and helper

@@ -1,6 +1,6 @@
 import React from 'react'; // Explicit import for clarity
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Removed Link
 import { MantineProvider } from '@mantine/core';
 
 // Import global styles
