@@ -14,7 +14,7 @@ export interface HomeState {
 // Helper function (optional, if needed)
 // const someHelper = () => { ... };
 
-export const useHomeStore = create<HomeState>((set, get) => ({
+export const useHomeStore = create<HomeState>((set) => ({
   // Initial state
   isLoading: false,
   error: null,

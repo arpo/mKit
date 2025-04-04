@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Text, Stack, Alert, Paper, Loader, Box } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
