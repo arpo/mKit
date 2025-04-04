@@ -9,23 +9,23 @@ if (!apiKey) {
   // In a real app, you might throw an error or handle this differently
 }
 
-// Define safety settings: Blocking only high severity for all categories
+// Define safety settings: Blocking turned off for all categories
 const safetySettings = [
   {
     category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH, // Changed from MEDIUM_AND_ABOVE
+    threshold: HarmBlockThreshold.BLOCK_NONE,
   },
   {
     category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH, // Changed from MEDIUM_AND_ABOVE
+    threshold: HarmBlockThreshold.BLOCK_NONE,
   },
    {
     category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH, // Changed from MEDIUM_AND_ABOVE
+    threshold: HarmBlockThreshold.BLOCK_NONE,
   },
    {
     category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH, // Changed from MEDIUM_AND_ABOVE
+    threshold: HarmBlockThreshold.BLOCK_NONE,
   },
 ];
 
@@ -42,7 +42,7 @@ if (apiKey) {
       model: 'gemini-1.5-pro', // Keep gemini-1.5-pro for now
       safetySettings // Apply safety settings during model initialization
     });
-    console.log("Gemini AI model 'gemini-1.5-pro' initialized successfully with BLOCK_ONLY_HIGH safety settings.");
+    console.log("Gemini AI model 'gemini-1.5-pro' initialized successfully with BLOCK_NONE safety settings.");
   } catch (error) {
     console.error('Error initializing GoogleGenerativeAI:', error);
     // Log specific error if available, otherwise generic message
