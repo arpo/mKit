@@ -8,7 +8,8 @@ The project previously consisted of a Node.js/Express backend, potentially servi
 
 -   Users interact primarily with the React frontend running in their browser (served from the `/client` directory).
 -   The frontend handles UI rendering, client-side navigation (using React Router), and component/page-level state management (using Zustand).
--   Data is fetched from and sent to the backend API endpoints (exposed by the `server/server.ts` code, likely under an `/api/` prefix).
+-   Data is fetched from and sent to the backend API endpoints (exposed by the `server/server.cjs` code, under an `/api/` prefix).
+-   The application provides audio processing features, including audio separation using different models (Spleeter for standard split, Demucs for vocal isolation) via the Replicate API, and transcription via Replicate and formatting via Gemini.
 -   The user experience should be seamless, with the frontend providing a dynamic interface while the backend handles business logic and data persistence.
 -   Development workflow allows running both client and server concurrently.
 -   Production deployment serves the optimized client build through the Node.js server.
