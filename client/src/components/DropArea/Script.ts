@@ -4,12 +4,11 @@ import { create } from 'zustand';
 export interface DropAreaState {
   isDraggingOverWindow: boolean;
   droppedFiles: File[];
-  isLoading: boolean; // Tracks initial upload + potentially polling status
-  predictionId: string | null; // Store only the ID after initial request
-  predictionStatus: string | null; // e.g., 'starting', 'processing', 'succeeded', 'failed'
-  finalResult: any | null; // Store final output from Replicate
-  error: string | null;
-  // pollingIntervalId: number | null; // REMOVED - Polling managed by component
+  isLoading: boolean; // Tracks the direct upload and transcription process
+  // predictionId: string | null; // REMOVED
+  // predictionStatus: string | null; // REMOVED
+  // finalResult: any | null; // REMOVED - Result (lyrics) managed by HomeStore
+  error: string | null; // For storing upload/processing errors
 }
 
 // Define actions for the DropArea component
@@ -17,16 +16,15 @@ export interface DropAreaActions {
   setDragging: (dragging: boolean) => void;
   handleFileDrop: (files: File[]) => void;
   handleFileReject: (rejections: any[]) => void;
-  // Return the result object or throw error
-  uploadAudio: (service: 'falai' | 'demucs') => Promise<any>;
+  // Return the lyrics string or throw error
+  uploadAudio: () => Promise<string>; // Updated function signature
   clearFiles: () => void;
-  // Add simple setters to be called from component effects
+  // Add simple setters for state management
   setIsLoading: (loading: boolean) => void;
-  setPredictionStatus: (status: string | null) => void;
-  setFinalResult: (result: any | null) => void;
   setError: (error: string | null) => void;
-  setPredictionId: (id: string | null) => void; // Added to ensure ID can be set/cleared
-  // REMOVED Polling actions: _startPolling, _stopPolling, _checkStatus
+  // setPredictionStatus: (status: string | null) => void; // REMOVED
+  // setFinalResult: (result: any | null) => void; // REMOVED
+  // setPredictionId: (id: string | null) => void; // REMOVED
 }
 
 // Combine state and actions
@@ -36,11 +34,11 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   // Initial state - include all properties from DropAreaState
   isDraggingOverWindow: false,
   droppedFiles: [],
-  isLoading: false,
-  predictionId: null,
-  predictionStatus: null,
-  finalResult: null,
-  error: null,
+  isLoading: false, // Initialize isLoading
+  // predictionId: null, // REMOVED
+  // predictionStatus: null, // REMOVED
+  // finalResult: null, // REMOVED
+  error: null, // Initialize error
   // pollingIntervalId: null, // REMOVED
 
   // Define actions implementations
@@ -48,109 +46,107 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
 
   handleFileDrop: (files) => {
     console.log('Accepted files (from Script.ts):', files);
-    // Don't need to stop polling here anymore
+    // Reset relevant state on new file drop
     set({
-      droppedFiles: files, // Store the dropped files
-      isDraggingOverWindow: false, // Reset drag state on drop
-      predictionId: null, // Clear previous ID
-      predictionStatus: null, // Clear previous status
-      finalResult: null, // Clear previous results
-      error: null, // Clear previous errors on new drop
-      isLoading: false, // Ensure loading is false
+      droppedFiles: files,
+      isDraggingOverWindow: false,
+      isLoading: false, // Ensure loading is reset
+      error: null, // Clear previous errors
+      // predictionId: null, // REMOVED
+      // predictionStatus: null, // REMOVED
+      // finalResult: null, // REMOVED
     });
   },
 
   handleFileReject: (rejections) => {
     console.error('Rejected files (from Script.ts):', rejections);
-    // Don't need to stop polling here anymore
+    // Handle rejection state
     set({
       isDraggingOverWindow: false,
       error: 'File rejected (check size or type).', // Provide clearer error
       droppedFiles: [], // Clear files on rejection
-      predictionId: null,
-      predictionStatus: 'failed',
-      finalResult: null,
-      isLoading: false,
-     });
-  },
-
-  clearFiles: () => {
-    // Don't need to stop polling here anymore
-    set({
-      droppedFiles: [],
-      predictionId: null,
-      predictionStatus: null,
-      finalResult: null,
-      error: null,
-      isLoading: false,
-      // pollingIntervalId: null // REMOVED
+      isLoading: false, // Ensure loading is false
+      // predictionId: null, // REMOVED
+      // predictionStatus: 'failed', // REMOVED
+      // finalResult: null, // REMOVED
     });
   },
 
-  // Modified to return result object or throw error
-  uploadAudio: async (service) => {
-    const files = get().droppedFiles;
-    if (files.length === 0) {
+  clearFiles: () => {
+    // Clear files and associated state
+    set({
+      droppedFiles: [],
+      isLoading: false, // Reset loading state
+      error: null, // Clear any errors
+      // predictionId: null, // REMOVED
+      // predictionStatus: null, // REMOVED
+      // finalResult: null, // REMOVED
+    });
+  },
+
+  // uploadAudio now directly interacts with the backend /api/gemini endpoint
+  uploadAudio: async (): Promise<string> => { // Return Promise<string>
+    const { droppedFiles } = get(); // Get files from state
+    if (droppedFiles.length === 0) {
       const errorMsg = 'No file selected.';
       console.error(errorMsg);
-      set({ error: errorMsg });
-      throw new Error(errorMsg); // Throw error instead of returning void
+      set({ error: errorMsg, isLoading: false }); // Set error state
+      throw new Error(errorMsg);
     }
 
     // Start loading, clear previous errors
-    // No longer setting predictionId, predictionStatus, finalResult here
     set({ isLoading: true, error: null });
 
-    const file = files[0]; // Assuming single file upload
+    const file = droppedFiles[0];
     const formData = new FormData();
-    formData.append('audio', file); // Key must match upload.single('audio') in routes.cjs
+    // Key 'audioFile' must match the backend Multer setup
+    formData.append('audioFile', file);
 
     try {
-      // Construct URL with service query parameter
-      const url = `/api/audio-service?service=${service}`;
-      console.log(`[Upload] Sending request to: ${url}`);
+      const url = '/api/gemini'; // Target the backend endpoint
+      console.log(`[Upload] Sending audio file to: ${url}`);
 
-      const response = await fetch(url, { // Use the new URL
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
+        // No 'Content-Type' header needed for FormData with fetch
       });
 
-      const result = await response.json();
+      const result = await response.json(); // Parse JSON response
 
       if (!response.ok) {
-        // Throw error with message from backend if available
-        const errorMsg = result.message || `HTTP error! status: ${response.status}`;
-        throw new Error(errorMsg); // Throw error to be caught below
+        // Throw an error with the message from the backend, or a generic one
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
 
-      console.log(`[Upload] Response Status: ${response.status}`, result);
+       // Check if lyrics string is present in the response
+       if (typeof result.lyrics !== 'string') {
+           console.error('[Upload] Invalid response structure:', result);
+           throw new Error('Received invalid response format from server.');
+       }
 
-      // Success - set loading false and return the result object
+      console.log('Gemini transcription successful.');
+      // Set loading false on success, but don't store lyrics here. Let HomeStore handle it.
       set({ isLoading: false, error: null });
-      return result; // Return the JSON response body
+      return result.lyrics; // Return the lyrics string
 
     } catch (error) {
-      console.error('File upload failed:', error);
+      console.error('[Upload] Direct transcription failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown upload error occurred.';
-      // Set error state and re-throw for the calling function (HomeStore) to handle
+      // Set error state and re-throw
       set({ error: errorMessage, isLoading: false });
-      throw error; // Re-throw the error
+      throw error; // Rethrow for the caller (HomeStore) to handle
     }
   },
 
   // --- Simple Setters ---
   setIsLoading: (loading) => set({ isLoading: loading }),
-  setPredictionStatus: (status) => set({ predictionStatus: status }),
-  setFinalResult: (result) => set({ finalResult: result }),
   setError: (errorMsg) => set({ error: errorMsg }),
-  setPredictionId: (id) => set({ predictionId: id }),
-
-  // REMOVED Polling actions: _startPolling, _stopPolling, _checkStatus
+  // setPredictionStatus: (status) => set({ predictionStatus: status }), // REMOVED
+  // setFinalResult: (result) => set({ finalResult: result }), // REMOVED
+  // setPredictionId: (id) => set({ predictionId: id }), // REMOVED
 
 }));
 
-// Optional: Export helper functions related to DropArea logic
-// export function initDropArea() {
-//   // Perform any one-time setup for the drop area logic if needed
-//   console.log('DropArea script initialized');
-// }
+// Optional: Export helper functions related to DropArea logic (if any)
+// export function someHelperFunction() { ... }
