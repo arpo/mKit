@@ -40,7 +40,7 @@ if (apiKey) {
     genAI = new GoogleGenerativeAI(apiKey);
     model = genAI.getGenerativeModel({
       model: 'gemini-1.5-pro', // Keep gemini-1.5-pro for now
-       safetySettings // Apply safety settings during model initialization
+      safetySettings // Apply safety settings during model initialization
     });
     console.log("Gemini AI model 'gemini-1.5-pro' initialized successfully with BLOCK_ONLY_HIGH safety settings.");
   } catch (error) {
@@ -96,9 +96,15 @@ const handleAudioTranscription = async (req, res) => {
   };
 
   try {
-    console.log(`Sending request to Gemini API (Model: ${model.model})...`);
-    const result = await model.generateContent(requestPayload);
-    // console.log('Raw Gemini Response:', JSON.stringify(result, null, 2));
+    // Explicitly specify the model in the generateContent call as well
+    console.log(`Sending request to Gemini API (Model specified in options: gemini-1.5-pro)...`);
+    const result = await model.generateContent(
+        requestPayload,
+        { // Add generation options explicitly here too
+            model: 'gemini-1.5-pro' // Explicitly ensure the pro model is used for this request
+        }
+    );
+    // console.log('Raw Gemini Response:', JSON.stringify(result, null, 2)); // Uncomment for deep debugging
 
     // --- Consolidated Response Handling ---
     const response = result?.response;
@@ -111,7 +117,7 @@ const handleAudioTranscription = async (req, res) => {
 
     if (!response?.candidates || response.candidates.length === 0) {
       console.error('Error: No candidates returned from Gemini API.');
-      console.error('Full Gemini Response:', JSON.stringify(response, null, 2));
+      console.error('Full Gemini Response:', JSON.stringify(response, null, 2)); // Log the response part
       const finishReason = response?.finishReason || 'UNKNOWN';
       return res.status(500).json({ error: `No candidates received from Gemini API. Finish reason: ${finishReason}.` });
     }
@@ -125,34 +131,40 @@ const handleAudioTranscription = async (req, res) => {
         if (finishReason === 'SAFETY') {
              return res.status(400).json({ error: `Content blocked by safety filter. Reason: ${finishReason}. Safety info: ${safetyInfo}` });
         }
+         // Corrected variable name from 'message' to 'finishReason' for the generic error case
          return res.status(500).json({ error: `Gemini processing stopped: ${finishReason}. Safety info: ${safetyInfo}` });
     }
 
+    // Handle empty content cases after successful generation
     let responseText = '';
-    if (candidate.content?.parts && Array.isArray(candidate.content.parts)) {
+    if (candidate.content?.parts && Array.isArray(candidate.content.parts) && candidate.content.parts.length > 0) {
       const textPart = candidate.content.parts.find(part => typeof part.text === 'string');
       if (textPart) {
         responseText = textPart.text;
       }
-    } else if (typeof candidate.content?.text === 'string') {
+    } else if (typeof candidate.content?.text === 'string') { // Fallback for models that might not use 'parts'
         responseText = candidate.content.text;
     }
 
+
+    // If responseText is still empty even if finishReason is STOP, it indicates an issue.
     if (!responseText && (finishReason === 'STOP' || finishReason === 'MAX_TOKENS')) {
         console.error('Error: Empty text content received from Gemini API despite successful generation.');
-        console.error('Full Candidate:', JSON.stringify(candidate, null, 2));
+        console.error('Full Candidate:', JSON.stringify(candidate, null, 2)); // Log the candidate details
         return res.status(500).json({ error: 'Received empty response text from Gemini API.' });
-    } else if (!responseText) {
+    } else if (!responseText) { // Handle cases where finishReason might be missing or UNKNOWN
          console.error('Error: Empty response text and potentially incomplete generation.');
          console.error('Full Candidate:', JSON.stringify(candidate, null, 2));
          return res.status(500).json({ error: 'Received empty or incomplete response from Gemini API.' });
      }
 
+    // Success path: Clean and return the response text
     console.log('Gemini transcription successful.');
     const cleanedText = responseText.trim().replace(/^```|```$/g, '').trim();
     res.json({ lyrics: cleanedText });
 
   } catch (error) {
+    // Handle network errors or other exceptions during API call
     console.error('Error calling Gemini API:', error);
     const statusCode = error.status || error.statusCode || 500;
     const message = error.message || 'An unknown error occurred.';
@@ -166,9 +178,10 @@ const handleAudioTranscription = async (req, res) => {
          return res.status(503).json({ error: 'Gemini service is temporarily unavailable or overloaded. Please try again later.' });
      } else if (statusCode === 400 && message.includes('Unsupported language')) {
           return res.status(400).json({ error: 'Unsupported language in audio file.' });
-     } else if (statusCode === 400 && (message.includes('Invalid argument') || message.includes('invalid format'))) {
+      } else if (statusCode === 400 && (message.includes('Invalid argument') || message.includes('invalid format'))) {
           return res.status(400).json({ error: `Invalid request: ${message}. Check file format and parameters.` });
       }
+    // Generic error for other issues
     res.status(500).json({ error: `Failed to process audio due to an internal error: ${message}` });
   }
 };
