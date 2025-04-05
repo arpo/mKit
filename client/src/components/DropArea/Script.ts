@@ -4,6 +4,7 @@ import { create } from 'zustand';
 export interface DropAreaState {
   isDraggingOverWindow: boolean;
   droppedFiles: File[];
+  audioUrl: string | null; // URL for the dropped audio file
   isLoading: boolean; // Tracks the direct upload and transcription process
   // predictionId: string | null; // REMOVED
   // predictionStatus: string | null; // REMOVED
@@ -22,6 +23,7 @@ export interface DropAreaActions {
   // Add simple setters for state management
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  revokeAudioUrl: () => void; // Action to revoke the current audio URL
   // setPredictionStatus: (status: string | null) => void; // REMOVED
   // setFinalResult: (result: any | null) => void; // REMOVED
   // setPredictionId: (id: string | null) => void; // REMOVED
@@ -34,6 +36,7 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   // Initial state - include all properties from DropAreaState
   isDraggingOverWindow: false,
   droppedFiles: [],
+  audioUrl: null, // Initialize audioUrl
   isLoading: false, // Initialize isLoading
   // predictionId: null, // REMOVED
   // predictionStatus: null, // REMOVED
@@ -44,11 +47,32 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   // Define actions implementations
   setDragging: (dragging) => set({ isDraggingOverWindow: dragging }),
 
+  revokeAudioUrl: () => {
+    const currentUrl = get().audioUrl;
+    if (currentUrl) {
+      URL.revokeObjectURL(currentUrl);
+      console.log('Revoked audio URL:', currentUrl);
+    }
+    set({ audioUrl: null });
+  },
+
   handleFileDrop: (files) => {
     console.log('Accepted files (from Script.ts):', files);
+    const { revokeAudioUrl } = get(); // Get the revoke action
+
+    // Revoke any existing URL before creating a new one
+    revokeAudioUrl();
+
+    let newAudioUrl: string | null = null;
+    if (files.length > 0 && files[0].type.startsWith('audio/')) {
+      newAudioUrl = URL.createObjectURL(files[0]);
+      console.log('Created audio URL:', newAudioUrl);
+    }
+
     // Reset relevant state on new file drop
     set({
       droppedFiles: files,
+      audioUrl: newAudioUrl, // Set the new URL
       isDraggingOverWindow: false,
       isLoading: false, // Ensure loading is reset
       error: null, // Clear previous errors
@@ -73,9 +97,13 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   },
 
   clearFiles: () => {
+    const { revokeAudioUrl } = get(); // Get the revoke action
+    revokeAudioUrl(); // Revoke URL on clear
+
     // Clear files and associated state
     set({
       droppedFiles: [],
+      audioUrl: null, // Ensure URL is cleared in state
       isLoading: false, // Reset loading state
       error: null, // Clear any errors
       // predictionId: null, // REMOVED

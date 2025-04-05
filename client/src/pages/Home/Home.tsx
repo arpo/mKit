@@ -1,7 +1,7 @@
 import { Button, Text, Stack, Alert, Paper, Loader, Box } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
-import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check
+import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
 import { useHomeStore } from './Script'; // Import the simplified store
 
 function Home() {
@@ -14,8 +14,9 @@ function Home() {
   const uploadAndProcessAudio = useHomeStore((state) => state.uploadAndProcessAudio);
   const clearResult = useHomeStore((state) => state.clearResult);
 
-  // Get droppedFiles from DropArea to enable/disable buttons
+  // Get droppedFiles and audioUrl from DropArea
   const droppedFiles = useDropAreaStore((state) => state.droppedFiles);
+  const audioUrl = useDropAreaStore((state) => state.audioUrl);
 
   // Button click handlers
   const handleStartClick = () => uploadAndProcessAudio();
@@ -31,6 +32,15 @@ function Home() {
       <p>Drop your audio file below to get the lyrics:</p>
 
       <DropArea />
+
+      {/* Conditionally render audio player */}
+      {audioUrl && (
+        <Box mt="md">
+          <audio controls src={audioUrl} style={{ width: '100%' }}>
+            Your browser does not support the audio element.
+          </audio>
+        </Box>
+      )}
 
       <Stack mt="md" gap="sm">
         {/* Show Start button only if files are ready and not loading/processed */}
