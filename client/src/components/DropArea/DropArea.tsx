@@ -99,7 +99,7 @@ function DropArea(props: Partial<DropzoneProps>) {
               Drag music files here or click to select files
             </Text>
             <Text size="sm" c="dimmed" inline mt={7}>
-              Attach audio files, max 100MB per file
+              Attach audio files, max 300MB per file
             </Text>
           </div>
         </Group>

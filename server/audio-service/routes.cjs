@@ -8,7 +8,7 @@ const router = express.Router();
 // Configure Multer for single file upload (memory storage)
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 } // 100 MB limit
+  limits: { fileSize: 300 * 1024 * 1024 } // 300 MB limit
 });
 
 // Define the POST route for starting the audio processing
