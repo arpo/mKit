@@ -87,22 +87,25 @@ function Home() {
         {/* Display Processed Lyrics */}
         {processedLyrics && !isLoading && !error && (
            <Paper shadow="xs" p="md" mt="md" withBorder style={{ position: 'relative' }}>
-             <ActionIcon
-               variant="subtle"
-               style={{ position: 'absolute', top: 10, right: 10 }}
-               onClick={() => useHomeStore.getState().copyLyrics()}
-               aria-label="Copy lyrics"
-             >
-               <IconCopy size={16} />
-             </ActionIcon>
-             <Text fw={500} mb="xs">Lyrics:</Text>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <Text fw={500}></Text>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 {copyFeedback && (
+                   <Text size="sm" c="dimmed">
+                     {copyFeedback}
+                   </Text>
+                 )}
+                 <ActionIcon
+                   variant="subtle"
+                   onClick={() => useHomeStore.getState().copyLyrics()}
+                   aria-label="Copy lyrics"
+                 >
+                   <IconCopy size={16} />
+                 </ActionIcon>
+               </div>
+             </div>
              {/* Use pre-wrap to preserve line breaks from Gemini */}
-             <Text style={{ whiteSpace: 'pre-wrap' }}>{processedLyrics}</Text>
-             {copyFeedback && (
-               <Text size="sm" c="dimmed" ta="right" mt="xs">
-                 {copyFeedback}
-               </Text>
-             )}
+             <Text style={{ whiteSpace: 'pre-wrap' }} mt="xs">{processedLyrics}</Text>
            </Paper>
         )}
       </Stack>
