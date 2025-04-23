@@ -11,6 +11,7 @@ export interface HomeState {
   uploadAndProcessAudio: () => Promise<void>;
   clearResult: () => void;
   copyLyrics: () => void;
+  setProcessedLyrics: (lyrics: string) => void;
 }
 
 // Helper function (optional, if needed)
@@ -73,6 +74,8 @@ export const useHomeStore = create<HomeState>((set) => ({
         setTimeout(() => set({ copyFeedback: null }), 2000);
       });
   },
+
+  setProcessedLyrics: (lyrics) => set({ processedLyrics: lyrics }),
 
 }));
 

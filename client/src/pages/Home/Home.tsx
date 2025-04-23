@@ -1,4 +1,4 @@
-import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
+import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon, Textarea } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
@@ -104,8 +104,23 @@ function Home() {
                  </ActionIcon>
                </div>
              </div>
-             {/* Use pre-wrap to preserve line breaks from Gemini */}
-             <Text style={{ whiteSpace: 'pre-wrap' }} mt="xs">{processedLyrics}</Text>
+             {/* Replace Text with Textarea for editable lyrics */}
+             <Textarea
+               value={processedLyrics}
+               onChange={(e) => useHomeStore.getState().setProcessedLyrics(e.currentTarget.value)}
+               autosize
+               minRows={3}
+               maxRows={10}
+               styles={{
+                 input: {
+                   whiteSpace: 'pre-wrap',
+                   padding: 0,
+                   border: 'none',
+                   backgroundColor: 'transparent'
+                 }
+               }}
+               mt="xs"
+             />
            </Paper>
         )}
       </Stack>
