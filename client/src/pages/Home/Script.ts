@@ -5,10 +5,12 @@ export interface HomeState {
   isLoading: boolean; // Tracks the overall upload & processing state
   error: string | null; // Stores errors from the upload/processing step
   processedLyrics: string | null; // Stores the final formatted lyrics from Gemini
+  copyFeedback: string | null; // Stores feedback message for copy operation
 
   // Actions
   uploadAndProcessAudio: () => Promise<void>;
   clearResult: () => void;
+  copyLyrics: () => void;
 }
 
 // Helper function (optional, if needed)
@@ -19,6 +21,7 @@ export const useHomeStore = create<HomeState>((set) => ({
   isLoading: false,
   error: null,
   processedLyrics: null,
+  copyFeedback: null,
 
   // Define actions implementations
   uploadAndProcessAudio: async () => {
@@ -51,8 +54,24 @@ export const useHomeStore = create<HomeState>((set) => ({
       isLoading: false,
       error: null,
       processedLyrics: null,
+      copyFeedback: null,
     });
     console.log('[HomeStore] Result cleared.');
+  },
+
+  copyLyrics: () => {
+    const state = useHomeStore.getState();
+    if (!state.processedLyrics) return;
+
+    navigator.clipboard.writeText(state.processedLyrics)
+      .then(() => {
+        set({ copyFeedback: 'Copied to clipboard!' });
+        setTimeout(() => set({ copyFeedback: null }), 2000);
+      })
+      .catch(() => {
+        set({ copyFeedback: 'Failed to copy' });
+        setTimeout(() => set({ copyFeedback: null }), 2000);
+      });
   },
 
 }));

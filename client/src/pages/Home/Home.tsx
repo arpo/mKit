@@ -1,5 +1,5 @@
-import { Button, Text, Stack, Alert, Paper, Loader, Box } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
-import { IconAlertCircle } from '@tabler/icons-react';
+import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
+import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
 import { useHomeStore } from './Script'; // Import the simplified store
@@ -9,6 +9,7 @@ function Home() {
   const isLoading = useHomeStore((state) => state.isLoading);
   const error = useHomeStore((state) => state.error);
   const processedLyrics = useHomeStore((state) => state.processedLyrics);
+  const copyFeedback = useHomeStore((state) => state.copyFeedback);
 
   // Select actions from the simplified HomeStore
   const uploadAndProcessAudio = useHomeStore((state) => state.uploadAndProcessAudio);
@@ -85,10 +86,23 @@ function Home() {
 
         {/* Display Processed Lyrics */}
         {processedLyrics && !isLoading && !error && (
-           <Paper shadow="xs" p="md" mt="md" withBorder>
+           <Paper shadow="xs" p="md" mt="md" withBorder style={{ position: 'relative' }}>
+             <ActionIcon
+               variant="subtle"
+               style={{ position: 'absolute', top: 10, right: 10 }}
+               onClick={() => useHomeStore.getState().copyLyrics()}
+               aria-label="Copy lyrics"
+             >
+               <IconCopy size={16} />
+             </ActionIcon>
              <Text fw={500} mb="xs">Lyrics:</Text>
              {/* Use pre-wrap to preserve line breaks from Gemini */}
              <Text style={{ whiteSpace: 'pre-wrap' }}>{processedLyrics}</Text>
+             {copyFeedback && (
+               <Text size="sm" c="dimmed" ta="right" mt="xs">
+                 {copyFeedback}
+               </Text>
+             )}
            </Paper>
         )}
       </Stack>
