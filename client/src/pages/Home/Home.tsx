@@ -113,6 +113,7 @@ function Home() {
                maxRows={10}
                styles={{
                  input: {
+                  textAlign: 'center',
                    whiteSpace: 'pre-wrap',
                    padding: 0,
                    border: 'none',
@@ -120,6 +121,7 @@ function Home() {
                  }
                }}
                mt="xs"
+               autoFocus
              />
            </Paper>
         )}
