@@ -10,6 +10,7 @@ export interface DropAreaState {
   // predictionStatus: string | null; // REMOVED
   // finalResult: any | null; // REMOVED - Result (lyrics) managed by HomeStore
   error: string | null; // For storing upload/processing errors
+  onNewFileDropped: (() => void) | null; // Callback for new file drops
 }
 
 // Define actions for the DropArea component
@@ -24,6 +25,7 @@ export interface DropAreaActions {
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   revokeAudioUrl: () => void; // Action to revoke the current audio URL
+  setOnNewFileDropped: (callback: (() => void) | null) => void;
   // setPredictionStatus: (status: string | null) => void; // REMOVED
   // setFinalResult: (result: any | null) => void; // REMOVED
   // setPredictionId: (id: string | null) => void; // REMOVED
@@ -42,6 +44,7 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   // predictionStatus: null, // REMOVED
   // finalResult: null, // REMOVED
   error: null, // Initialize error
+  onNewFileDropped: null as (() => void) | null,
   // pollingIntervalId: null, // REMOVED
 
   // Define actions implementations
@@ -59,6 +62,12 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   handleFileDrop: (files) => {
     console.log('Accepted files (from Script.ts):', files);
     const { revokeAudioUrl } = get(); // Get the revoke action
+
+    // Call onNewFileDropped callback if provided
+    const { onNewFileDropped } = get();
+    if (onNewFileDropped) {
+      onNewFileDropped();
+    }
 
     // Revoke any existing URL before creating a new one
     revokeAudioUrl();
@@ -170,6 +179,7 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   // --- Simple Setters ---
   setIsLoading: (loading) => set({ isLoading: loading }),
   setError: (errorMsg) => set({ error: errorMsg }),
+  setOnNewFileDropped: (callback) => set({ onNewFileDropped: callback }),
   // setPredictionStatus: (status) => set({ predictionStatus: status }), // REMOVED
   // setFinalResult: (result) => set({ finalResult: result }), // REMOVED
   // setPredictionId: (id) => set({ predictionId: id }), // REMOVED

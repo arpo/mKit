@@ -6,7 +6,24 @@ import { Dropzone, DropzoneProps } from '@mantine/dropzone';
 import { useDropAreaStore, DropAreaState, DropAreaActions } from './Script'; // Import store, state, and actions
 import './DropArea.css'; // Import the CSS file
 
-function DropArea(props: Partial<DropzoneProps>) {
+interface DropAreaProps extends Partial<DropzoneProps> {
+  onNewFileDropped?: () => void;
+}
+
+import { useEffect } from 'react';
+
+function DropArea({ onNewFileDropped, ...props }: DropAreaProps) {
+  const setOnNewFileDropped = useDropAreaStore(state => state.setOnNewFileDropped);
+
+  useEffect(() => {
+    // Set callback when component mounts
+    setOnNewFileDropped(onNewFileDropped || null);
+    
+    // Clean up when component unmounts
+    return () => {
+      setOnNewFileDropped(null);
+    };
+  }, [onNewFileDropped, setOnNewFileDropped]);
   const theme = useMantineTheme();
   // Get state and actions from the Zustand store
   const isDraggingOverWindow = useDropAreaStore((state: DropAreaState) => state.isDraggingOverWindow);

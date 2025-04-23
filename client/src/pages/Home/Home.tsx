@@ -32,7 +32,7 @@ function Home() {
       <h1>mKit - Audio to Lyrics</h1>
       <p>Drop your audio file below to get the lyrics:</p>
 
-      <DropArea />
+      <DropArea onNewFileDropped={clearResult} />
 
       {/* Conditionally render audio player */}
       {audioUrl && (
@@ -69,7 +69,7 @@ function Home() {
 
         {/* Display Loading state */}
         {isLoading && (
-           <Box mt="md" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
+           <Box mt="md" p="sm" style={{ border: '0px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-sm)' }}>
             <Stack align="center" gap="xs">
               <Loader size="sm" />
               <Text>Processing audio...</Text>
