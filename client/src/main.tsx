@@ -1,33 +1,15 @@
-import React from 'react'; // Explicit import for clarity
+import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Removed Link
 import { MantineProvider } from '@mantine/core';
+import { BrowserRouter } from 'react-router-dom';
 
 // Import global styles
 import './styles/global.css';
 // Import Mantine core styles
 import '@mantine/core/styles.css';
 
-// Import page components
-import Home from './pages/Home/Home';
-import About from './pages/About/About';
-
-// Basic Layout Component (Optional but good practice)
-function Layout() {
-  return (
-    <div>
-      {/* <nav>
-        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', gap: '1rem' }}>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About</Link></li>
-        </ul>
-      </nav>
-      <hr /> */}
-      {/* Routes will render their elements here */}
-    </div>
-  );
-}
-
+// Import App component
+import App from './App';
 
 // Get the root element
 const container = document.getElementById('root');
@@ -41,12 +23,7 @@ root.render(
   <React.StrictMode>
     <MantineProvider defaultColorScheme="dark">
       <BrowserRouter>
-        <Layout /> {/* Include the basic layout/navigation */}
-        <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-          {/* Add other routes here */}
-        </Routes>
+        <App />
       </BrowserRouter>
     </MantineProvider>
   </React.StrictMode>,
