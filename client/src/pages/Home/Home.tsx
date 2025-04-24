@@ -30,7 +30,8 @@ function Home() {
     // Track button click with Google Analytics
     gtag('event', 'button_click', {
       'event_category': 'Engagement',
-      'event_label': 'Get Lyrics Button'
+      'event_label': 'Get Lyrics Button',
+      'language': language // Add language parameter
     });
     uploadAndProcessAudio(language); // Pass language
   };
@@ -48,7 +49,17 @@ function Home() {
       {/* Conditionally render audio player */}
       {audioUrl && (
         <Box mt="md">
-          <audio controls src={audioUrl} style={{ width: '100%' }}>
+          <audio
+            controls
+            src={audioUrl}
+            style={{ width: '100%' }}
+            onPlay={() => { // Add onPlay handler
+              gtag('event', 'audio_playback', {
+                'event_category': 'Media',
+                'event_label': 'Audio Play Started'
+              });
+            }}
+          >
             Your browser does not support the audio element.
           </audio>
         </Box>

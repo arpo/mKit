@@ -1,3 +1,4 @@
+declare const gtag: (...args: any[]) => void; // Explicitly declare gtag
 import { create } from 'zustand';
 import { useDropAreaStore } from '../../components/DropArea/Script';
 
@@ -41,6 +42,12 @@ export const useHomeStore = create<HomeState>((set) => ({
       console.error('[HomeStore] Error during upload/processing:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       set({ isLoading: false, error: errorMessage, processedLyrics: null });
+      // Track processing error
+      gtag('event', 'processing_error', {
+        'event_category': 'Error',
+        'event_label': 'Audio Processing Failed',
+        'error_message': errorMessage
+      });
     }
   },
 
@@ -65,6 +72,11 @@ export const useHomeStore = create<HomeState>((set) => ({
       .then(() => {
         set({ copyFeedback: 'Copied to clipboard!' });
         setTimeout(() => set({ copyFeedback: null }), 2000);
+        // Track lyrics copy success
+        gtag('event', 'lyrics_copy', {
+          'event_category': 'Conversion',
+          'event_label': 'Lyrics Copied'
+        });
       })
       .catch(() => {
         set({ copyFeedback: 'Failed to copy' });

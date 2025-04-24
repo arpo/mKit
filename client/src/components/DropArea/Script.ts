@@ -1,3 +1,4 @@
+declare const gtag: (...args: any[]) => void; // Explicitly declare gtag
 import { create } from 'zustand';
 
 // Define the state shape for the DropArea component
@@ -88,6 +89,12 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
       // predictionId: null, // REMOVED
       // predictionStatus: null, // REMOVED
       // finalResult: null, // REMOVED
+    });
+
+    // Track file upload/drop success
+    gtag('event', 'file_upload', {
+      'event_category': 'Interaction',
+      'event_label': 'Audio File Dropped/Selected'
     });
   },
 
