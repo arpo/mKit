@@ -74,9 +74,24 @@ const handleAudioTranscription = async (req, res) => {
        return res.status(400).json({ error: `Unsupported file type: ${req.file.mimetype}. Please upload audio (e.g., MP3, WAV, OGG, FLAC).` });
    }
 
+  // Extract language from the request body
+  const language = req.body.language;
+  // console.log('Received language:', language);
 
   // --- Multimodal Request ---
-  const textPrompt = "Transcribe this audio to a song lyric, Formate it to look like a lyric. Dont include sections like [verse] [chorus]";
+  const textPrompt = `
+Transcribe this audio to a song lyric,
+Formate it to look like a lyric.
+Don't include sections like [verse] [chorus]${!language ? '' : `\n\nLanguage: ${language}`}
+`;
+// Also return style and vibe of the song.
+
+// Also return a detailed text prompt how an album cover would look like. use view of the singer and the lyrics. Important to include what type image it is, like a painting, a photo, a digital art, etc. Don't include any text in the prompt.
+
+// Return the text in a code block.
+
+  // console.log('Using text prompt:', textPrompt);
+
   const audioDataPart = {
     inlineData: {
       mimeType: req.file.mimetype,
