@@ -1,5 +1,5 @@
 import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon, Textarea } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
-import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
+import { IconAlertCircle, IconCopy, IconX, IconTrash } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
 import { useHomeStore } from './Script'; // Import the simplified store
@@ -52,18 +52,6 @@ function Home() {
             disabled={isLoading}
           >
             Get Lyrics
-          </Button>
-        )}
-
-        {/* Show Clear button if there are files, loading, result, or error */}
-        {showClear && (
-          <Button
-            onClick={handleClearClick}
-            variant="default"
-            color="gray"
-            disabled={isLoading && !error} // Allow clearing error even if technically loading stopped due to error
-          >
-            Clear
           </Button>
         )}
 
