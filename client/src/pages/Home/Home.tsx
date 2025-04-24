@@ -1,9 +1,9 @@
-import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon, Textarea, TextInput, Group } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
-import { IconAlertCircle, IconCopy, IconX, IconTrash } from '@tabler/icons-react';
+import { ActionIcon, Alert, Box, Button, Loader, Paper, Stack, Text, Textarea, TextInput } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
+import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
-import { useHomeStore } from './Script'; // Import the simplified store
 import './Home.css'; // Import the CSS for responsive styling
+import { useHomeStore } from './Script'; // Import the simplified store
 
 function Home() {
   // Select state from the simplified HomeStore
@@ -25,7 +25,6 @@ function Home() {
 
   // Determine button state based on simplified logic
   const canStart = droppedFiles.length > 0 && !isLoading && !processedLyrics;
-  const showClear = droppedFiles.length > 0 || isLoading || processedLyrics || error;
 
   return (
     <div>
