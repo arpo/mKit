@@ -3,6 +3,7 @@ import { IconAlertCircle, IconCopy, IconX, IconTrash } from '@tabler/icons-react
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
 import { useHomeStore } from './Script'; // Import the simplified store
+import './Home.css'; // Import the CSS for responsive styling
 
 function Home() {
   // Select state from the simplified HomeStore
@@ -46,18 +47,22 @@ function Home() {
       <Stack mt="md" gap="sm">
         {/* Show Start button and Language input only if files are ready and not loading/processed */}
         {canStart && (
-          <Box display="flex" style={{ gap: 'var(--mantine-spacing-sm)' }}> {/* Use Box with flex display and style for gap */}
+          <Box
+            display="flex"
+            style={{ gap: 'var(--mantine-spacing-sm)' }}
+            className="responsive-controls"
+          >
             <Button
               onClick={handleStartClick}
-              loading={isLoading} // Use isLoading directly
+              loading={isLoading}
               disabled={isLoading}
-              w="50%" // Fixed width
+              className="responsive-button"
             >
               Get Lyrics
             </Button>
             <TextInput
               placeholder="Language (auto detect)"
-              w="50%" // Fixed width
+              className="responsive-input"
             />
           </Box>
         )}

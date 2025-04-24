@@ -1,0 +1,24 @@
+/* Responsive styles for Home component */
+
+/* Default styles (for screens wider than 500px) */
+.responsive-controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.responsive-button,
+.responsive-input {
+  width: 50%;
+}
+
+/* Media query for small screens */
+@media (max-width: 500px) {
+  .responsive-controls {
+    flex-direction: column;
+  }
+
+  .responsive-button,
+  .responsive-input {
+    width: 100%;
+  }
+}
