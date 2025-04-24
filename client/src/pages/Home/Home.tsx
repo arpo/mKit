@@ -1,3 +1,4 @@
+declare const gtag: (...args: any[]) => void; // Explicitly declare gtag
 import { useState } from 'react'; // Import useState
 import { ActionIcon, Alert, Box, Button, Loader, Paper, Stack, Text, Textarea, TextInput } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
@@ -25,7 +26,14 @@ function Home() {
   const audioUrl = useDropAreaStore((state) => state.audioUrl);
 
   // Button click handlers
-  const handleStartClick = () => uploadAndProcessAudio(language); // Pass language
+  const handleStartClick = () => {
+    // Track button click with Google Analytics
+    gtag('event', 'button_click', {
+      'event_category': 'Engagement',
+      'event_label': 'Get Lyrics Button'
+    });
+    uploadAndProcessAudio(language); // Pass language
+  };
 
   // Determine button state based on simplified logic
   const canStart = droppedFiles.length > 0 && !isLoading && !processedLyrics;
