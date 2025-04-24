@@ -6,7 +6,7 @@ export interface LoginState {
   error: string | null;
 }
 
-export const useLoginStore = create<LoginState>((set) => ({
+export const useLoginStore = create<LoginState>(() => ({
   isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
   isLoading: false,
   error: null,
