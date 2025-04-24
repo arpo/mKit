@@ -1,4 +1,4 @@
-import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon, Textarea } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
+import { Button, Text, Stack, Alert, Paper, Loader, Box, ActionIcon, Textarea, TextInput, Group } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle, IconCopy, IconX, IconTrash } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
@@ -44,15 +44,22 @@ function Home() {
       )}
 
       <Stack mt="md" gap="sm">
-        {/* Show Start button only if files are ready and not loading/processed */}
+        {/* Show Start button and Language input only if files are ready and not loading/processed */}
         {canStart && (
-          <Button
-            onClick={handleStartClick}
-            loading={isLoading} // Use isLoading directly
-            disabled={isLoading}
-          >
-            Get Lyrics
-          </Button>
+          <Box display="flex" style={{ gap: 'var(--mantine-spacing-sm)' }}> {/* Use Box with flex display and style for gap */}
+            <Button
+              onClick={handleStartClick}
+              loading={isLoading} // Use isLoading directly
+              disabled={isLoading}
+              w="50%" // Fixed width
+            >
+              Get Lyrics
+            </Button>
+            <TextInput
+              placeholder="Language (auto detect)"
+              w="50%" // Fixed width
+            />
+          </Box>
         )}
 
         {/* Display Loading state */}
