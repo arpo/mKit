@@ -62,6 +62,7 @@ function DropArea({ onNewFileDropped, ...props }: DropAreaProps) {
       onReject={handleFileReject} // Use action from store
       maxSize={100 * 1024 ** 2} // 100MB limit
       accept={['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/aac', 'audio/flac', 'audio/mp3']} // Define accepted audio types directly
+      multiple={false} // Allow only one file
       {...props}
       // Keep dynamic styles inline, move static ones to CSS
       className="dropAreaRoot" // Apply root class
