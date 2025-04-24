@@ -22,7 +22,6 @@ function Home() {
 
   // Button click handlers
   const handleStartClick = () => uploadAndProcessAudio();
-  const handleClearClick = () => clearResult();
 
   // Determine button state based on simplified logic
   const canStart = droppedFiles.length > 0 && !isLoading && !processedLyrics;
@@ -30,7 +29,7 @@ function Home() {
 
   return (
     <div>
-      <h1 style={{fontSize: '50px'}}>mKit</h1>
+      <h1 style={{fontSize: '50px', marginBottom: 0}}>mKit</h1>
       <p>Drop your audio file below to get the lyrics:</p>
 
       <DropArea onNewFileDropped={clearResult} />
