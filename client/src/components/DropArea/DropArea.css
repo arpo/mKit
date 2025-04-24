@@ -3,6 +3,7 @@
 
 .dropAreaRoot {
   min-height: 120px; /* Or use Mantine variable if preferred: var(--mantine-line-height-lg) * ~7.5? Check rem(120) */
+  padding: 2rem;
   pointer-events: all;
   display: flex;
   justify-content: center;

@@ -29,7 +29,7 @@ function Home() {
 
   return (
     <div>
-      <h1>mKit - Audio to Lyrics</h1>
+      <h1 style={{fontSize: '50px'}}>mKit</h1>
       <p>Drop your audio file below to get the lyrics:</p>
 
       <DropArea onNewFileDropped={clearResult} />
