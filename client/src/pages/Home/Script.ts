@@ -8,14 +8,11 @@ export interface HomeState {
   copyFeedback: string | null; // Stores feedback message for copy operation
 
   // Actions
-  uploadAndProcessAudio: () => Promise<void>;
+  uploadAndProcessAudio: (language: string) => Promise<void>; // Add language parameter
   clearResult: () => void;
   copyLyrics: () => void;
   setProcessedLyrics: (lyrics: string) => void;
 }
-
-// Helper function (optional, if needed)
-// const someHelper = () => { ... };
 
 export const useHomeStore = create<HomeState>((set) => ({
   // Initial state
@@ -25,15 +22,15 @@ export const useHomeStore = create<HomeState>((set) => ({
   copyFeedback: null,
 
   // Define actions implementations
-  uploadAndProcessAudio: async () => {
+  uploadAndProcessAudio: async (language: string) => { // Add language parameter
     // Set loading state and clear previous results/errors
     set({ isLoading: true, error: null, processedLyrics: null });
 
     try {
       // Get the upload function from the DropArea store
       const uploadAudio = useDropAreaStore.getState().uploadAudio;
-      // Call the upload function which now returns the lyrics string
-      const lyrics = await uploadAudio();
+      // Call the upload function which now returns the lyrics string, passing the language
+      const lyrics = await uploadAudio(language); // Pass language
 
       // Success: Update state with the result
       set({ isLoading: false, processedLyrics: lyrics, error: null });

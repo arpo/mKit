@@ -19,7 +19,7 @@ export interface DropAreaActions {
   handleFileDrop: (files: File[]) => void;
   handleFileReject: (rejections: any[]) => void;
   // Return the lyrics string or throw error
-  uploadAudio: () => Promise<string>; // Updated function signature
+  uploadAudio: (language: string) => Promise<string>; // Updated function signature to accept language
   clearFiles: () => void;
   // Add simple setters for state management
   setIsLoading: (loading: boolean) => void;
@@ -122,7 +122,7 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
   },
 
   // uploadAudio now directly interacts with the backend /api/gemini endpoint
-  uploadAudio: async (): Promise<string> => { // Return Promise<string>
+  uploadAudio: async (language: string): Promise<string> => { // Accept language parameter
     const { droppedFiles } = get(); // Get files from state
     if (droppedFiles.length === 0) {
       const errorMsg = 'No file selected.';
@@ -138,6 +138,8 @@ export const useDropAreaStore = create<FullDropAreaState>((set, get) => ({
     const formData = new FormData();
     // Key 'audioFile' must match the backend Multer setup
     formData.append('audioFile', file);
+    // Append the language to the form data
+    formData.append('language', language);
 
     try {
       const url = '/api/gemini'; // Target the backend endpoint

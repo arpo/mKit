@@ -1,3 +1,4 @@
+import { useState } from 'react'; // Import useState
 import { ActionIcon, Alert, Box, Button, Loader, Paper, Stack, Text, Textarea, TextInput } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
 import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
 import DropArea from '../../components/DropArea/DropArea';
@@ -6,6 +7,9 @@ import './Home.css'; // Import the CSS for responsive styling
 import { useHomeStore } from './Script'; // Import the simplified store
 
 function Home() {
+  // State for the language input
+  const [language, setLanguage] = useState('');
+
   // Select state from the simplified HomeStore
   const isLoading = useHomeStore((state) => state.isLoading);
   const error = useHomeStore((state) => state.error);
@@ -21,7 +25,7 @@ function Home() {
   const audioUrl = useDropAreaStore((state) => state.audioUrl);
 
   // Button click handlers
-  const handleStartClick = () => uploadAndProcessAudio();
+  const handleStartClick = () => uploadAndProcessAudio(language); // Pass language
 
   // Determine button state based on simplified logic
   const canStart = droppedFiles.length > 0 && !isLoading && !processedLyrics;
@@ -61,6 +65,8 @@ function Home() {
             <TextInput
               placeholder="Language (auto detect)"
               className="responsive-input"
+              value={language} // Bind value
+              onChange={(event) => setLanguage(event.currentTarget.value)} // Add onChange handler
             />
           </Box>
         )}
