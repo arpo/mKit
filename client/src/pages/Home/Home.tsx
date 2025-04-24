@@ -59,7 +59,7 @@ function Home() {
         {showClear && (
           <Button
             onClick={handleClearClick}
-            variant="outline"
+            variant="default"
             color="gray"
             disabled={isLoading && !error} // Allow clearing error even if technically loading stopped due to error
           >

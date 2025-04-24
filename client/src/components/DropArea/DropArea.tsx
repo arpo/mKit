@@ -113,7 +113,7 @@ function DropArea({ onNewFileDropped, ...props }: DropAreaProps) {
 
           <div>
             <Text size="xl" inline>
-              Drag music files here or click to select files
+              Drag music a file here or click to select
             </Text>
             <Text size="sm" c="dimmed" inline mt={7}>
               Attach audio files, max 300MB per file
