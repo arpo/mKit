@@ -1,11 +1,12 @@
 declare const gtag: (...args: any[]) => void; // Explicitly declare gtag
 import { useState } from 'react'; // Import useState
 import { ActionIcon, Alert, Box, Button, Loader, Paper, Stack, Text, Textarea, TextInput } from '@mantine/core'; // Removed unused imports like Progress, Select, Anchor, SimpleGrid
-import { IconAlertCircle, IconCopy } from '@tabler/icons-react';
+import { IconAlertCircle, IconCopy, IconMusic } from '@tabler/icons-react'; // Added IconMusic
 import DropArea from '../../components/DropArea/DropArea';
 import { useDropAreaStore } from '../../components/DropArea/Script'; // Keep for droppedFiles check and audioUrl
 import './Home.css'; // Import the CSS for responsive styling
 import { useHomeStore } from './Script'; // Import the simplified store
+import Karaoke from '../../components/Karaoke/Karaoke'; // Import Karaoke component
 
 function Home() {
   // State for the language input
@@ -20,6 +21,7 @@ function Home() {
   // Select actions from the simplified HomeStore
   const uploadAndProcessAudio = useHomeStore((state) => state.uploadAndProcessAudio);
   const clearResult = useHomeStore((state) => state.clearResult);
+  const startKaraoke = useHomeStore((state) => state.startKaraoke); // Added Karaoke action
 
   // Get droppedFiles and audioUrl from DropArea
   const droppedFiles = useDropAreaStore((state) => state.droppedFiles);
@@ -125,6 +127,16 @@ function Home() {
                  >
                    <IconCopy size={16} />
                  </ActionIcon>
+                 {/* Karaoke Button */}
+                 <ActionIcon
+                   variant="subtle"
+                   onClick={() => startKaraoke()}
+                   disabled={!audioUrl || !processedLyrics} // Enable only when audio and lyrics are present
+                   aria-label="Start Karaoke"
+                   title="Start Karaoke" // Tooltip
+                 >
+                   <IconMusic size={16} />
+                 </ActionIcon>
                </div>
              </div>
              {/* Replace Text with Textarea for editable lyrics */}
@@ -149,6 +161,9 @@ function Home() {
            </Paper>
         )}
       </Stack>
+
+      {/* Render Karaoke Modal (conditionally rendered internally based on isKaraokeOpen) */}
+      <Karaoke />
     </div>
   );
 }

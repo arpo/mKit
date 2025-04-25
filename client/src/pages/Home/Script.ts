@@ -7,12 +7,21 @@ export interface HomeState {
   error: string | null; // Stores errors from the upload/processing step
   processedLyrics: string | null; // Stores the final formatted lyrics from Gemini
   copyFeedback: string | null; // Stores feedback message for copy operation
+  // Karaoke State
+  isKaraokeOpen: boolean;
+  parsedLyrics: Array<{ time: number; text: string }> | null;
+  currentLyricIndex: number;
 
   // Actions
   uploadAndProcessAudio: (language: string) => Promise<void>; // Add language parameter
   clearResult: () => void;
   copyLyrics: () => void;
   setProcessedLyrics: (lyrics: string) => void;
+  // Karaoke Actions
+  toggleKaraoke: (open: boolean) => void;
+  startKaraoke: () => void;
+  setCurrentLyricIndex: (index: number) => void;
+  _parseAndSetLyrics: () => void; // Internal helper
 }
 
 export const useHomeStore = create<HomeState>((set) => ({
@@ -21,6 +30,11 @@ export const useHomeStore = create<HomeState>((set) => ({
   error: null,
   processedLyrics: null,
   copyFeedback: null,
+  // Karaoke Initial State
+  isKaraokeOpen: false,
+  parsedLyrics: null,
+  currentLyricIndex: -1,
+
 
   // Define actions implementations
   uploadAndProcessAudio: async (language: string) => { // Add language parameter
@@ -86,6 +100,55 @@ export const useHomeStore = create<HomeState>((set) => ({
 
   setProcessedLyrics: (lyrics) => set({ processedLyrics: lyrics }),
 
+  // --- Karaoke Actions Implementation ---
+
+  toggleKaraoke: (open) => set({ isKaraokeOpen: open }),
+
+  setCurrentLyricIndex: (index) => set({ currentLyricIndex: index }),
+
+  _parseAndSetLyrics: () => {
+    const lyricsString = useHomeStore.getState().processedLyrics;
+    if (!lyricsString) {
+      set({ parsedLyrics: null });
+      return;
+    }
+
+    const lines = lyricsString.split('\n');
+    const parsed: Array<{ time: number; text: string }> = [];
+
+    // Regex to capture [MM:SS.ms] or [HH:MM:SS] and the text
+    const timestampRegex = /^\[(\d{2,}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?\]\s*(.*)/;
+
+
+    lines.forEach(line => {
+      const match = line.match(timestampRegex);
+      if (match) {
+        const hours = match[3] ? parseInt(match[1], 10) : 0;
+        const minutes = match[3] ? parseInt(match[2], 10) : parseInt(match[1], 10);
+        const seconds = match[3] ? parseInt(match[3], 10) : parseInt(match[2], 10);
+        const milliseconds = match[4] ? parseInt(match[4].padEnd(3, '0'), 10) : 0; // Pad ms if needed
+        const text = match[5];
+
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+        parsed.push({ time: totalSeconds, text });
+      }
+    });
+
+    set({ parsedLyrics: parsed });
+  },
+
+  startKaraoke: () => {
+    // Ensure lyrics are parsed before opening
+    useHomeStore.getState()._parseAndSetLyrics();
+    // Only open if parsing was successful (or lyrics were already parsed)
+    if (useHomeStore.getState().parsedLyrics && useHomeStore.getState().parsedLyrics!.length > 0) {
+       set({ isKaraokeOpen: true, currentLyricIndex: -1 }); // Reset index when starting
+    } else {
+        console.warn("Could not parse lyrics or no timestamps found. Karaoke cannot start.");
+        // Optionally set an error state here
+    }
+  },
+
 }));
 
 // Optional: Subscribe to DropAreaStore if needed for secondary effects,
@@ -107,3 +170,18 @@ useDropAreaStore.subscribe(
   { equalityFn: (a, b) => a[0] === b[0] && a[1] === b[1] }
 );
 */
+
+// Helper outside create if preferred, or keep inside if using state directly is needed.
+// This regex handles [MM:SS.ms] and [HH:MM:SS] formats.
+/* const parseTimestamp = (timestamp: string): number => {
+  const regex = /(?:(\d{2}):)?(\d{2}):(\d{2})(?:[.,](\d{1,3}))?/;
+  const match = timestamp.match(regex);
+  if (!match) return 0;
+
+  const hours = match[1] ? parseInt(match[1], 10) : 0;
+  const minutes = parseInt(match[2], 10);
+  const seconds = parseInt(match[3], 10);
+  const milliseconds = match[4] ? parseInt(match[4].padEnd(3, '0'), 10) : 0;
+
+  return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+}; */
