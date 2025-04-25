@@ -81,8 +81,13 @@ const handleAudioTranscription = async (req, res) => {
   // --- Multimodal Request ---
   const textPrompt = `
 Transcribe this audio to a song lyric,
-Formate it to look like a lyric.
+Formate it to look like a lyric, add timestamps for each line.
 Don't include sections like [verse] [chorus]${!language ? '' : `\n\nLanguage: ${language}`}
+
+example of the format:
+[00:00:00] Can it ever be enough
+[00:00:03] When I look in the mirror
+[00:00:06] There's a light that I lost
 `;
 // Also return style and vibe of the song.
 
